@@ -28,6 +28,12 @@
   display: block;
 }
 
+.gameScoreBox {
+  width: 100px;
+  display: inline-block;
+  margin-right: 20px;
+}
+
 .fa-6 {
   font-size: 200px;
 }
@@ -43,4 +49,21 @@
 
 .gameOptionModal {
 
+}
+
+.gameHr {
+  width: 60%;
+  display: block;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.gameDropdown {
+  margin-top: 30px;
+  margin-right: 20px;
+
+}
+
+.modal-body {
+  padding: 30px;
 }

@@ -55,50 +55,51 @@
       </p>
 
       <div class="gameStats">
-
-        <div class="col-lg-2">
-          <div class="panel panel-success">
-            <div class="panel-heading">
-              <h3 class="panel-title" id="panel-title">
-                Wins
-              </h3>
-            </div>
-            <div class="panel-body gameWins">
-              0
-            </div>
+        <div class="panel panel-success gameScoreBox">
+          <div class="panel-heading">
+            <h3 class="panel-title" id="panel-title">
+              Wins
+            </h3>
+          </div>
+          <div class="panel-body gameWins">
+            0
           </div>
         </div>
-        <div class="col-lg-2">
-          <div class="panel panel-warning">
-            <div class="panel-heading">
-              <h3 class="panel-title" id="panel-title">
-                Ties
-              </h3>
-            </div>
-            <div class="panel-body gameTies">
-              0
-            </div>
+        <div class="panel panel-warning gameScoreBox">
+          <div class="panel-heading">
+            <h3 class="panel-title" id="panel-title">
+              Ties
+            </h3>
+          </div>
+          <div class="panel-body gameTies">
+            0
           </div>
         </div>
-        <div class="col-lg-2">
-          <div class="panel panel-danger">
-            <div class="panel-heading">
-              <h3 class="panel-title" id="panel-title">
-                Losses
-              </h3>
-            </div>
-            <div class="panel-body gameLosses">
-              0
-            </div>
+        <div class="panel panel-danger gameScoreBox">
+          <div class="panel-heading">
+            <h3 class="panel-title" id="panel-title">
+              Losses
+            </h3>
+          </div>
+          <div class="panel-body gameLosses">
+            0
           </div>
         </div>
       </div>
 
-      <hr>
+      <hr class="gameHr">
         <div class="gameRound">
           Round <span class="gameRoundNumber">5</span>
         </div>
-      <hr>
+      <hr class="gameHr">
+        <div class="gameReport">
+          Round 4: You won with rock. Opponent lost with scissors.
+        </div>
+      <hr class="gameHr">
+      <div class="gameReport">
+        Round 3: You lost with rock. Opponent won with paper.
+      </div>
+    <hr class="gameHr">
 
       <div class="gameButtons">
         <button type="button" class="btn btn-default btn-lg gameButton">
@@ -123,16 +124,21 @@
 
       <div class="gameSubmit">
         <span class="gameButtonBottom">
-          <button type="button" class="btn btn-warning btn-lg" data-toggle="modal" data-target="#gameOptionModal">
+          <button type="button" class="btn btn-default btn-lg" data-toggle="modal" data-target="#gameOptionModal">
             <i class="fa fa-cog"></i>
             Options
           </button>
         </span>
         <span class="gameButtonBottom">
-          <a class="btn btn-lg btn-success" href="#" role="button">
+          <a type="button" class="btn btn-default btn-lg" href="index.html">
+            Finish
+          </a>
+        </span>
+        <span class="gameButtonBottom">
+          <button type="button" class="btn btn-success btn-lg" data-toggle="modal" data-target="#gameResultModal">
             Submit
             <i class="fa fa-angle-double-right"></i>
-          </a>
+          </button>
         </span>
       </div>
     </div>
@@ -146,7 +152,43 @@
             <h4 class="modal-title" id="myModalLabel">Options</h4>
           </div>
           <div class="modal-body">
-            ...
+
+            <!--Num Rounds-->
+            <div class="input-group">
+              <span class="input-group-addon" id="sizing-addon2">
+                Number of Rounds
+              </span>
+              <input type="text" class="form-control" placeholder="500" aria-describedby="sizing-addon2">
+            </div>
+
+            <!--Score Mode-->
+            <div class="btn-group gameDropdown">
+              <button type="button" class="btn btn-default">
+                Standard Score
+              </button>
+              <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                <span class="caret"></span>
+                <span class="sr-only">Toggle Dropdown</span>
+              </button>
+              <ul class="dropdown-menu" role="menu">
+                <li><a href="#">Standard Score</a></li>
+                <li><a href="#">Stochastic Score</a></li>
+              </ul>
+            </div>
+
+            <!--See Opponent-->
+            <div class="btn-group gameDropdown">
+              <button type="button" class="btn btn-default">View Opponent</button>
+              <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                <span class="caret"></span>
+                <span class="sr-only">Toggle Dropdown</span>
+              </button>
+              <ul class="dropdown-menu" role="menu">
+                <li><a href="#">View Opponent</a></li>
+                <li><a href="#">Hide Opponent</a></li>
+              </ul>
+            </div>
+
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -162,14 +204,19 @@
         <div class="modal-content">
           <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            <h4 class="modal-title" id="myModalLabel">Modal title</h4>
+            <h4 class="modal-title" id="myModalLabel">Results</h4>
           </div>
           <div class="modal-body">
-            ...
+            WIN
+
+            Score +2
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary">Save changes</button>
+            <a type="button" class="btn btn-default" href="index.html">Finish</a>
+            <button type="button" class="btn btn-primary">
+              Continue
+              <i class="fa fa-angle-double-right"></i>
+            </button>
           </div>
         </div>
       </div>
