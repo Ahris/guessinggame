@@ -1,0 +1,46 @@
+.gameButton {
+  margin: 20px;
+}
+
+.gameButtons {
+  display: block;
+}
+
+.gameButtonText {
+
+}
+
+.gameSubmit {
+  margin: 30px 50px;
+
+}
+
+.gameInstructions {
+
+}
+
+.gameContainer {
+  text-align: center;
+}
+
+.gameStats {
+  margin: 20px;
+  display: block;
+}
+
+.fa-6 {
+  font-size: 200px;
+}
+
+.gameRound {
+  font-weight: bold;
+
+}
+
+.gameButtonBottom {
+  margin-right: 20px;
+}
+
+.gameOptionModal {
+
+}
