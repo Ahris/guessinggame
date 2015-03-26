@@ -7,12 +7,29 @@
 }
 
 .gameButtonText {
+    font-size: 1.5em;
+}
 
+#popupAlert {
+    display: none;
+    position: absolute;
+    bottom: 18%;
+    margin-left: 30%;
+    width: 200px;
+    height: 48px;
+    z-index: 10;
 }
 
 .gameSubmit {
   margin: 30px 50px;
 
+}
+
+#resultText {
+    color: #5cb85c;
+    font-size: 2em;
+    font-weight: bold;
+    text-align: center;
 }
 
 .gameInstructions {
@@ -24,14 +41,24 @@
 }
 
 .gameStats {
-  margin-bottom: 20px;
   display: block;
 }
 
-.gameScoreBox {
+.gameInfoBox {
   width: 100px;
   display: inline-block;
   margin-right: 20px;
+}
+
+.gameScoreBox {
+    width: 350px;
+    margin-right: 20px;
+    display: inline-block;
+}
+
+.counter {
+    font-size: 2em;
+    padding: 0px;
 }
 
 .fa-6 {

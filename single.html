@@ -50,34 +50,49 @@
 
     <div class="container gameContainer">
 
+      <div class="alert alert-info" id="popupAlert" role="alert">
+        Please choose a move.
+      </div>
+
+      <div class="panel panel-primary gameScoreBox">
+        <div class="panel-heading">
+          <h3 class="panel-title" id="panel-title">
+            Score
+          </h3>
+        </div>
+        <div class="panel-body counter" id="scoreNumber">
+          0
+        </div>
+      </div>
+
       <div class="gameStats">
-        <div class="panel panel-success gameScoreBox">
+        <div class="panel panel-success gameInfoBox">
           <div class="panel-heading">
             <h3 class="panel-title" id="panel-title">
               Wins
             </h3>
           </div>
-          <div class="panel-body wins">
+          <div class="panel-body counter" id="wins">
             0
           </div>
         </div>
-        <div class="panel panel-warning gameScoreBox">
+        <div class="panel panel-warning gameInfoBox">
           <div class="panel-heading">
             <h3 class="panel-title" id="panel-title">
               Ties
             </h3>
           </div>
-          <div class="panel-body ties">
+          <div class="panel-body counter" id="ties">
             0
           </div>
         </div>
-        <div class="panel panel-danger gameScoreBox">
+        <div class="panel panel-danger gameInfoBox">
           <div class="panel-heading">
             <h3 class="panel-title" id="panel-title">
               Losses
             </h3>
           </div>
-          <div class="panel-body losses">
+          <div class="panel-body counter" id="losses">
             0
           </div>
         </div>
@@ -85,21 +100,33 @@
 
       <hr class="gameHr">
       <div class="gameRound">
-        Round <span class="gameRoundNumber">5</span>
+        Round <span id="gameRoundNumber">5</span>:
+        <span class="gameInstructions">
+          Your turn to play. Choose a move.
+        </span>
       </div>
       <hr class="gameHr">
-      <div class="gameReport">
-        Round 4: You won with rock. Opponent lost with scissors.
+      <div class="gameReport" id="prev1">
+        Round <span id="prev1Num">4</span>:
+        <span id="prev1Message">
+            You won with rock. Opponent lost with scissors.
+        </span>
       </div>
       <hr class="gameHr">
-      <div class="gameReport">
-        Round 3: You lost with rock. Opponent won with paper.
+      <div class="gameReport" id="prev2">
+        Round <span id="prev2Num">3</span>:
+        <span id="prev2Message">
+            You won with rock. Opponent lost with scissors.
+        </span>
       </div>
       <hr class="gameHr">
-
-      <p class="gameInstructions">
-        Your turn to play. Choose a move from the following.
-      </p>
+      <div class="gameReport" id="prev3">
+        Round <span id="prev3Num">2</span>:
+        <span id="prev3Message">
+            You won with rock. Opponent lost with scissors.
+        </span>
+      </div>
+      <hr class="gameHr">
 
       <div class="gameButtons">
         <button type="button" class="btn btn-default btn-lg gameButton" id="rock">
@@ -207,14 +234,15 @@
             <h4 class="modal-title" id="myModalLabel">Results</h4>
           </div>
           <div class="modal-body">
-            WIN
+            <div id="resultText">WIN</div>
 
             Score:
-            <span class="gameScoreNumber"> +2 </span>
+            <span id="gameScoreNumber"> +2 </span>
+            <div id="resultMessage">Good job!</div>
           </div>
           <div class="modal-footer">
             <a type="button" class="btn btn-default" href="index.html">Finish</a>
-            <button type="button" class="btn btn-primary">
+            <button type="button" class="btn btn-primary" id="continue">
               Continue
               <i class="fa fa-angle-double-right"></i>
             </button>
