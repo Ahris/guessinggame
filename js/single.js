@@ -1,23 +1,34 @@
 // Standard score = 1, stochastic score = 0;
 // View Opponent = 1, Hide oppinent = 0;
-var useStandardScore = 1;
-var useViewOpponent = 1;
-var numRounds = 500;
-var playerChoice = null;
-var cpuChoice = null;
-var curRound = 1;
-var wins = 0;
-var ties = 0;
-var losses = 0;
-var score = 0;
+var useStandardScore    = 1;
+var useViewOpponent     = 1;
+var numRounds           = 500;
+var playerChoice        = null;
+var cpuChoice           = null;
+var curRound            = 1;
+var wins                = 0;
+var ties                = 0;
+var losses              = 0;
+var score               = 0;
 
 // Text Strings
-var standardScoreStr = "Standard Score";
-var stochasticScoreStr = "Stochastic Score";
-var viewOpponentStr = "View Opponent";
-var hideOpponentStr = "Hide Opponent";
-var winStr = "Win";
-var loseStr = "Lose";
+var standardScoreStr    = "Standard Score";
+var stochasticScoreStr  = "Stochastic Score";
+var viewOpponentStr     = "View Opponent";
+var hideOpponentStr     = "Hide Opponent";
+var winStr              = "Win";
+var loseStr             = "Lose";
+
+// Log of last three games
+// Each row is an entry consisting of:
+// Player win/lose, move, CPU win/los, move
+var log = new Array(3);
+for (var i = 0; i < 3; ++i) {
+    log[i] = new Array(4);
+    for(var j = 0; j < 4; ++j) {
+        log[i][j] = "null";
+    }
+}
 
 // TODO
 // http://www.rpscontest.com/
@@ -78,15 +89,26 @@ $(document).ready(function() {
     $("#options").click(openOptions);
 
     $("#saveOptions").click(function() {
+        // Save the number of rounds
         var tmp = $("#numRoundsField").val();
-
         if($.isNumeric(tmp)) {
             numRounds = tmp;
         }
 
+        // View or hide the opponent data
         var oppMode = $("#gameOppDropdown").html();
         useViewOpponent = (oppMode == viewOpponentStr);
+        if(useViewOpponent) {
+            $(".gameStats").css("display", "block");
+            $("#gameLog").css("display", "block");
+            $("#resultMessage").css("display", "block");
+        } else {
+            $(".gameStats").css("display", "none");
+            $("#gameLog").css("display", "none");
+            $("#resultMessage").css("display", "none");
+        }
 
+        // Changes the score mode
         var scoreMode = $("#gameScoreDropdown").html();
         useStandardScore = (scoreMode == standardScoreStr);
 
@@ -105,20 +127,44 @@ $(document).ready(function() {
             return;
         }
 
+        // Update log array
+        log[2][0] = log[1][0]; log[2][1] = log[1][1];
+        log[2][2] = log[1][2]; log[2][3] = log[1][3];
+        log[1][0] = log[0][0]; log[1][1] = log[0][1];
+        log[1][2] = log[0][2]; log[1][3] = log[0][3];
+        
+        switch(playerChoice) {
+            case 0:
+                log[0][1] = "rock";
+                break;
+            case 1:
+                log[0][1] = "paper";
+                break;
+            case 2:
+                log[0][1] = "scissors";
+                break;
+        }
+
         var result = getWinner();
         switch(result) {
             case 0:
                 ++ties;
+                log[0][0] = "tie";
+                log[0][2] = "ties";
                 $("#ties").html(ties);
                 $("#resultText").html("TIE").css("color", "#f0ad4e");
                 break;
             case 1:
                 ++wins;
+                log[0][0] = "win";
+                log[0][2] = "loses";
                 $("#wins").html(wins);
                 $("#resultText").html("WIN").css("color", "#5cb85c");
                 break;
             case 2:
                 ++losses;
+                log[0][0] = "lose";
+                log[0][2] = "wins";
                 $("#losses").html(losses);
                 $("#resultText").html("LOSE").css("color", "#d9534f");
                 break;
@@ -129,20 +175,19 @@ $(document).ready(function() {
         $("#scoreNumber").html(score);
         $("#gameScoreNumber").html("+" + scoreIncr);
 
-        console.log(cpuChoice);
-
-
         if(useViewOpponent) {
             var resultStr = "The cpu played ";
-            console.log(resultStr);
             switch(cpuChoice) {
                 case 0:
+                    log[0][3] = "rock";
                     resultStr = resultStr.concat("rock.");
                     break;
                 case 1:
+                    log[0][3] = "paper";
                     resultStr = resultStr.concat("paper.");
                     break;
                 case 2:
+                    log[0][3] = "scissors";
                     resultStr = resultStr.concat("scissors.");
                     break;
             }
@@ -179,6 +224,19 @@ $(document).ready(function() {
             $("#prev2Num").html(curRound - 2);
             $("#prev3Num").html(curRound - 3);
         }
+
+        // Update displayed log
+        var text1 = "You " + log[0][0] + " with " + log[0][1] +
+                    ". Opponent " + log[0][2] + " with " + log[0][3] + ".";
+                    $("#prev1Message").html(text1);
+
+        var text2 = "You " + log[1][0] + " with " + log[1][1] +
+                    ". Opponent " + log[1][2] + " with " + log[1][3] + ".";
+                    $("#prev2Message").html(text2);
+
+        var text3 = "You " + log[2][0] + " with " + log[2][1] +
+                    ". Opponent " + log[2][2] + " with " + log[2][3] + ".";
+                    $("#prev3Message").html(text3);
 
         unselectOption();
         playerChoice = null;
