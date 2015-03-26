@@ -24,7 +24,7 @@
 }
 
 .gameStats {
-  margin: 20px;
+  margin-bottom: 20px;
   display: block;
 }
 
@@ -66,4 +66,9 @@
 
 .modal-body {
   padding: 30px;
+}
+
+// Score the in the results modal
+.gameScoreNumber {
+
 }
