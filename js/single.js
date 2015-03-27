@@ -3,13 +3,17 @@
 var useStandardScore    = 1;
 var useViewOpponent     = 1;
 var numRounds           = 500;
+var playerId            = null;
 var playerChoice        = null;
 var cpuChoice           = null;
+var gameResult          = null;
 var curRound            = 1;
 var wins                = 0;
 var ties                = 0;
 var losses              = 0;
 var score               = 0;
+var dScore              = 0;
+var socketio            = null;
 
 // Text Strings
 var standardScoreStr    = "Standard Score";
@@ -18,6 +22,16 @@ var viewOpponentStr     = "View Opponent";
 var hideOpponentStr     = "Hide Opponent";
 var winStr              = "Win";
 var loseStr             = "Lose";
+
+var choiceEnum = ["rock", "paper", "scissors"];
+var resultEnum = ["tie", "win", "lose"];
+var oppEnum    = ["hide", "view"];
+var scoreEnum  = ["stochastic", "standard"];
+
+// Timing variables
+var d           = new Date();
+var startTime   = 0;
+var endTime     = 0;
 
 // Log of last three games
 // Each row is an entry consisting of:
@@ -30,6 +44,36 @@ for (var i = 0; i < 3; ++i) {
     }
 }
 
+// 3D array of the score matrix
+// row = playerChoice, col = cpuChoice,
+// not needed in single player mode: inner = [+playerScore, +CPUScore]
+var standardScoreArray      = new Array(3);
+var stochScoreArray         = new Array(3);
+for(var i = 0; i < 3; ++i) {
+    standardScoreArray[i]   = new Array(3);
+    stochScoreArray[i]      = new Array(3);
+}
+
+standardScoreArray[0][0] = 1;
+standardScoreArray[0][1] = 1;
+standardScoreArray[0][2] = 1;
+standardScoreArray[1][0] = 1;
+standardScoreArray[1][1] = 1;
+standardScoreArray[1][2] = 1;
+standardScoreArray[2][0] = 1;
+standardScoreArray[2][1] = 1;
+standardScoreArray[2][2] = 1;
+
+stochScoreArray[0][0] = .5;
+stochScoreArray[0][1] = .5;
+stochScoreArray[0][2] = .5;
+stochScoreArray[1][0] = .5;
+stochScoreArray[1][1] = .5;
+stochScoreArray[1][2] = .5;
+stochScoreArray[2][0] = .5;
+stochScoreArray[2][1] = .5;
+stochScoreArray[2][2] = .5;
+
 // TODO
 // http://www.rpscontest.com/
 //$(window).resize(function() {
@@ -37,6 +81,13 @@ for (var i = 0; i < 3; ++i) {
 //});
 
 $(document).ready(function() {
+    // Communicating with the server
+    socketio = io.connect();
+
+    // TODO Query the server for the next player
+    playerId = 0;
+
+    startTime = d.getTime();
 
     /**
     * Prevent the user from leaving
@@ -127,12 +178,14 @@ $(document).ready(function() {
             return;
         }
 
+        endTime = d.getTime();
+
         // Update log array
         log[2][0] = log[1][0]; log[2][1] = log[1][1];
         log[2][2] = log[1][2]; log[2][3] = log[1][3];
         log[1][0] = log[0][0]; log[1][1] = log[0][1];
         log[1][2] = log[0][2]; log[1][3] = log[0][3];
-        
+
         switch(playerChoice) {
             case 0:
                 log[0][1] = "rock";
@@ -145,8 +198,8 @@ $(document).ready(function() {
                 break;
         }
 
-        var result = getWinner();
-        switch(result) {
+        gameResult = getWinner();
+        switch(gameResult) {
             case 0:
                 ++ties;
                 log[0][0] = "tie";
@@ -170,10 +223,10 @@ $(document).ready(function() {
                 break;
         }
 
-        var scoreIncr = getScore(result)
-        score += scoreIncr;
+        dScore = getScore(gameResult)
+        score += dScore;
         $("#scoreNumber").html(score);
-        $("#gameScoreNumber").html("+" + scoreIncr);
+        $("#gameScoreNumber").html("+" + dScore);
 
         if(useViewOpponent) {
             var resultStr = "The cpu played ";
@@ -206,6 +259,7 @@ $(document).ready(function() {
             $("#continue").hide();
         }
 
+        sendGameData();
         $("#gameResultModal").modal("show");
     });
 
@@ -215,6 +269,7 @@ $(document).ready(function() {
     * Close the results modal and set up the next round
     */
     $("#continue").click(function() {
+        startTime = d.getTime();
         ++curRound;
 
         // Continue to next game
@@ -245,12 +300,46 @@ $(document).ready(function() {
     });
 });
 
+/**
+ * Send the game data to the server
+ * Server will save the data into the database
+ */
+function sendGameData() {
+    // socketio.on("single_player_data",function(data) {
+    //     //Append an HR thematic break and the escaped HTML of the new message
+    //     document.getElementById("chatlog").appendChild(document.createElement("hr"));
+    //     document.getElementById("chatlog").appendChild(document.createTextNode(data['message']));
+    // });
+    var milliSecEllapsed = endTime - startTime;
+
+    socketio.emit("single_player_data", {
+        userId:         playerId,
+        turnNum:        curRound,
+        timeElapsed:    milliSecEllapsed,
+        playerChoice:   choiceEnum[playerChoice],
+        cpuChoice:      choiceEnum[cpuChoice],
+        turnScore:      dScore,
+        totalScore:     score,
+        result:         resultEnum[gameResult],
+        totalGames:     numRounds,
+        scoreMode:      scoreEnum[useStandardScore],
+        oppMode:        oppEnum[useViewOpponent]
+    });
+}
+
+/**
+ * Deselects the currently chosen move button
+ */
 function unselectOption() {
     $("#scissors").removeClass("active");
     $("#paper").removeClass("active");
     $("#rock").removeClass("active");
 }
 
+/**
+ * Set up the options menu and
+ * displays it once it is ready
+ */
 function openOptions() {
     if(useStandardScore) {
         $("#gameScoreDropdown").html(standardScoreStr);
@@ -305,9 +394,9 @@ function getWinner() {
  */
 function getScore(result) {
     if(useStandardScore) {
-        return 1;
+        return standardScoreArray[playerChoice][cpuChoice];
     } else {
-        return 1 * Math.random();
+        return Math.random() < stochScoreArray[playerChoice][cpuChoice];
     }
 }
 
