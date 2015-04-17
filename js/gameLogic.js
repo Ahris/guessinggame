@@ -38,12 +38,12 @@ $(document).ready(function() {
           return;
       }
 
-      $("#oppTurnModal").modal("show");
       // Prevent user from exiting pop up
       $("#oppTurnModal").modal({
           backdrop: "static",
           keyboard: false
       });
+      $("#oppTurnModal").modal("show");
 
       endTime = d.getTime();
       sendAndGetResult();
