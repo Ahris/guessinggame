@@ -1,0 +1,34 @@
+#multiplayerButtons {
+  max-width: 200px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 40px;
+}
+
+#multDescription {
+  text-align: center;
+  padding: 15px;
+}
+
+.gameContainer {
+  display: none;
+}
+
+#gameIdText {
+  font-family: monospace;
+  font-size: 1.5em;
+  font-style: italic;
+  text-align: center;
+  margin: 20px;
+  background-color: #99FF66;
+}
+
+#gameModalPadding {
+  padding: 25px;
+}
+
+#gameIdError {
+  color: red;
+  font-style: italic;
+  display: none;
+}

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<!-- saved from url=(0046)file:///home/ahris/Downloads/client%20(1).html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+      <title>Chat Server</title>
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css">
+      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap-theme.min.css">
+      <script type="text/javascript" src="./Chat Server_files/jquery.min.js"></script>
+      <script src="./Chat Server_files/bootstrap.min.js"></script>
+      <script type="text/javascript" src="file:///socket.io/socket.io.js"></script>
+      <script type="text/javascript">
+
+
+      var socketio = io.connect();
+      var user;
+      var chatRooms;
+      var currentChatroom; // updates onclick when a tab is pressed
+      var colors = ["Brown","Black","DarkBlue","DarkOliveGreen","Crimson","DarkOrange","DarkSlateBlue"];
+      var myColor;
+
+      socketio.on("message_to_client",function(data){
+         document.getElementById(currentChatroom).appendChild(document.createElement("hr"));
+
+         var textNode = document.createTextNode(data['username'] + ": " + data['message']);
+         var span = document.createElement('span');
+         span.style.color = myColor;
+         span.appendChild(textNode);
+         document.getElementById(currentChatroom).appendChild(span);
+         // document.getElementById(currentChatroom).appendChild(document.createTextNode(data['username'] + ": " + data['message']));
+      });
+
+      socketio.on("whisper_to_client",function(data){
+         console.log("Here");
+         console.log("Sender " + data["sender"]);
+         console.log("Username " + data["username"]);
+         console.log("Whisper " + data["whisper"]);
+         if(user == data["username"]) {
+            alert(data["sender"] + "whispered you: " + data["whisper"]);
+         }
+      });
+
+      socketio.on("incorrect_password",function(data){
+      if(user == data["user"]) {
+            alert("Incorrect password!");
+         }
+      });
+
+      socketio.on("invalid_permissions", function(data){
+         if(user == data["user"]) {
+            alert("Invalid permissions!");
+         }
+      });
+
+      socketio.on("invalid_parameters", function(data){
+         if(user == data["user"]) {
+            alert("Invalid parameters!");
+         }
+      });
+
+      socketio.on("user_is_banned", function(data){
+         if(user == data["user"]) {
+            alert("You've been banned from this chatroom!");
+         }
+      });
+
+      socketio.on("whisper_failed", function(data){
+         if(user == data["sender"]) {
+            alert("The user you whispered isn't in this chatroom!");
+         }
+      });
+
+      // Handles an edge case where, if a kicked user was only in one chat room,
+      // their view wouldn't remove that chatroom properly.
+      socketio.on("kicking_user_to_client",function(data){
+         // Filter chatrooms to find chatrooms that this user is in
+         var usrChatrooms = [];
+         for(var i = 0; i < data["allChatrooms"].length; i++) {
+            var current = data["allChatrooms"][i];
+            // Loop through each user in the current chatroom
+            for(var k = 0; k < current[1].length; k++) {
+               if(current[1][k] == user) {
+                  usrChatrooms.push(current);
+               }
+            }
+         }
+         console.log(usrChatrooms);
+
+         if(usrChatrooms.length == 0) {
+            document.getElementById("content").innerHTML = "";
+         }
+      });
+
+      socketio.on("chatRooms_to_client",function(data){
+         updateThisUser();
+
+         // Prepare list of chatrooms for display
+         var chatRoomsList = "";
+         for(var i = 0; i < data["allChatrooms"].length; i++){
+            chatRoomsList += data["allChatrooms"][i][0] + ", ";
+         }
+
+         document.getElementById("chatRooms").innerHTML = "<b>Chatrooms: </b> <p>"+chatRoomsList+"</p>";
+
+         // Filter chatrooms to find chatrooms that this user is in
+         var usrChatrooms = [];
+         for(var i = 0; i < data["allChatrooms"].length; i++) {
+            var current = data["allChatrooms"][i];
+            // Loop through each user in the current chatroom
+            for(var k = 0; k < current[1].length; k++) {
+               if(current[1][k] == user) {
+                  usrChatrooms.push(current);
+               }
+            }
+         }
+
+         if(usrChatrooms.length != 0) {
+            // Display tabs for this user's chatrooms
+            var displayTabs = "<ul id='tabs' class='nav nav-tabs' data-tabs='tabs'>";
+            for(var i = 0; i < usrChatrooms.length; i++) {
+               if(i == 0) { // first chatroom should be set as active
+                  displayTabs += "<li class='active chatroomTab' id='"+usrChatrooms[i][0]+"-tabID'><a href='#"+usrChatrooms[i][0]+"' data-toggle='tab'>" + usrChatrooms[i][0] + "</a></li>";
+               } else {
+                  displayTabs += "<li class='chatroomTab' id='"+usrChatrooms[i][0]+"-tabID'><a href='#"+usrChatrooms[i][0]+"' data-toggle='tab'>" + usrChatrooms[i][0] + "</a></li>";
+               }
+            }
+
+            displayTabs += "</ul>";
+            document.getElementById("content").innerHTML = displayTabs;
+
+            // Create divs for each tab
+            var tabDivs = "";
+            for(var i = 0; i < usrChatrooms.length; i++) {
+               // TODO: display active users in this chatroom
+               tabDivs += '<div class="tab-pane active" id='+usrChatrooms[i][0]+'>'+usrChatrooms[i][4]+'</div>';
+            }
+            document.getElementById("my-tab-content").innerHTML = tabDivs;
+
+            // Enable tabs
+            jQuery(document).ready(function ($) {
+               $('#tabs').tab();
+            });
+         }
+
+         // Update list of users
+         if(data["activeUsers"].length != 0) {
+            var usersList = "<b>Active users: </b>";
+            for(var i = 0; i < data["activeUsers"].length; i++){
+               usersList += data["activeUsers"][i] + ", ";
+            }
+            document.getElementById("users").innerHTML = usersList;
+         } else {
+            document.getElementById("users").innerHTML = "<b>No active users!</b>";
+         }
+
+         // User joined a chatroom and hasn't clicked the tab, so the ID doesn't exist yet
+         // Ensure it exists
+         if(currentChatroom === undefined && usrChatrooms.length > 0) {
+            currentChatroom = usrChatrooms[0][0];
+         }
+      });
+
+      function sendMessage(){
+         var msg = document.getElementById("message_input").value;
+         socketio.emit("message_to_server", {message:msg, username:user, chatroom:currentChatroom, savedMessages:"<hr>"+user+": "+msg});
+      }
+
+      function sendWhisper(){
+         var w = document.getElementById("whisper_text").value;
+         var u = document.getElementById("whisper_user").value;
+         socketio.emit("whisper_to_server", {whisper:w,username:u,sender:user});
+      }
+
+      function sendUsername(){
+         user = document.getElementById("username").value;
+         socketio.emit("username_to_server", {username:user});
+         // updateThisUser();
+      }
+
+      function createChatroom(){
+         name = document.getElementById("createChatroom").value;
+         pwd = document.getElementById("createPassword").value;
+         socketio.emit("chatRoom_to_server", {chatroomName:name, creator:user, password:pwd});
+      }
+
+      function joinChatroom(){
+         name = document.getElementById("joinChatroom").value;
+         pwd  = document.getElementById("joinPassword").value;
+         socketio.emit("userJoinsRoom_to_server", {chatroomName:name, username:user, password:pwd});
+      }
+
+      function updateThisUser(){
+         var rand = Math.floor((Math.random() * 6));
+         myColor = colors[rand];
+         if(user === undefined) {
+            document.getElementById("thisUser").innerHTML = "<b>Not logged in.</b>"
+         } else {
+
+            document.getElementById("thisUser").innerHTML = "<b>My username: </b> " + user;
+         }
+      }
+
+      function kickUser(){
+         toBeKicked = document.getElementById("kick_user").value;
+         console.log(toBeKicked);
+         console.log(user);
+         console.log(currentChatroom);
+         socketio.emit("kicking_user_to_server", {userToKick:toBeKicked, userKicking:user, chatroom:currentChatroom});
+      }
+
+      function banUser(){
+         toBeBanned = document.getElementById("ban_user").value;
+         socketio.emit("banning_user_to_server", {userToBan:toBeBanned, userBanning:user, chatroom:currentChatroom});
+      }
+
+      $(document).on( 'click', '.chatroomTab', function () {
+         currentChatroom = this.id;
+         var idx = currentChatroom.indexOf("-"); // strip -tabID to make IDs match up
+         currentChatroom = currentChatroom.substring(0,idx);
+      });
+
+      </script>
+   </head>
+   <body style="background-size: cover;
+                background-color: LightSteelBlue;
+                width: 75%;
+                max-width: 1500px;
+                margin: 0 auto;
+                margin-top: 20px;">
+      <nav class="navbar navbar-default" role="navigation">
+         <div class="container-fluid">
+             <div class="navbar-header">
+
+                     <ul class="nav navbar-nav">
+                        <li><form class="navbar-form navbar-left">
+                        <input class="form-control" type="text" id="username" placeholder="Username">
+                        </form></li>
+                        <li><button class="btn btn-inverse navbar-btn" onclick="sendUsername()">Login</button></li>
+
+                        <li><form class="navbar-form navbar-left">
+                        <input class="form-control" type="text" id="createChatroom" placeholder="Chatroom name">
+                        <input class="form-control" type="text" id="createPassword" placeholder="Chatroom password">
+                        </form></li>
+                        <li><button class="btn btn-inverse navbar-btn" onclick="createChatroom()">Create chatroom</button></li>
+
+                        <li><form class="navbar-form navbar-left">
+                        <input class="form-control" type="text" id="joinChatroom" placeholder="Chatroom name">
+                        <input class="form-control" type="text" id="joinPassword" placeholder="Chatroom password">
+                        </form></li>
+                        <li><button class="btn btn-inverse navbar-btn" onclick="joinChatroom()">Join chatroom</button></li>
+
+                     </ul>
+
+            </div>
+         </div>
+      </nav>
+
+      <div class="panel panel-default">
+         <div class="panel-heading">
+             <h3 class="panel-title">Control panel</h3>
+         </div>
+         <div class="panel-body">
+            <div id="thisUser"></div>
+            <div id="users"></div>
+            <div id="chatRooms"></div>
+             <!-- <form class='navbar-form navbar-left'>                                   -->
+                        <form class="navbar-form navbar-left">
+                        <input class="form-control" type="text" id="kick_user" placeholder="Kick user">
+                        </form>
+                        <button class="btn btn-inverse navbar-btn" onclick="kickUser()">Kick</button>
+
+                        <form class="navbar-form navbar-left">
+                        <input class="form-control" type="text" id="ban_user" placeholder="Ban user">
+                        </form>
+                        <button class="btn btn-inverse navbar-btn" onclick="banUser()">Ban</button>
+
+            </div>
+         </div>
+
+      <div class="panel panel-default">
+         <div class="panel-heading">
+            Chatrooms
+         </div>
+         <div class="panel-body">
+            <form class="navbar-form navbar-left">
+            <input class="form-control" type="text" id="message_input" placeholder="Message text">
+            </form>
+            <button class="btn btn-inverse navbar-btn" onclick="sendMessage()">Send message</button>
+
+             <form class="navbar-form navbar-left">
+            <input class="form-control" type="text" id="whisper_user" placeholder="User to whisper">
+            </form>
+            <form class="navbar-form navbar-left">
+            <input class="form-control" type="text" id="whisper_text" placeholder="Whisper text">
+            </form>
+            <button class="btn btn-inverse navbar-btn" onclick="sendWhisper()">Whisper</button>
+
+            <div id="content"></div>
+            <div id="my-tab-content" class="tab-content"></div>
+         </div>
+      </div>
+
+ </body></html>

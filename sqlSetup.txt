@@ -38,3 +38,38 @@ On the server, currently dropping the files at
 /var/www/html/
 the node stuff it at:
 /home/ubuntu/public_html
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+Bugs Fixed:
+EADDRINUSE, gotta kill the process using that port
+http://stackoverflow.com/questions/8553957/how-to-release-localhost-from-error-listen-eaddrinuse
+
+ps -ax | grep node
+kill -9 5187 // that 4 digit number is process number
+
+////////////////////////////////////////////////////////////////////////////
+
+Node.js EACCES error when listening on most ports, use sudo node nodeServer.js
+http://stackoverflow.com/questions/9164915/node-js-eacces-error-when-listening-on-most-ports
+
+////////////////////////////////////////////////////////////////////////////
+
+Changing origin, still a red error tho when page loads
+Uncaught SecurityError: Failed to read the 'contentDocument' property from 'HTMLIFrameElement':
+https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy#Changing_origin
+
+////////////////////////////////////////////////////////////////////////////
+
+http://psitsmike.com/2011/10/node-js-and-socket-io-multiroom-chat-tutorial/
+
+To emit globally on the server side use this :
+io.sockets.emit('new move', 'data1');
+
+To emit to the current socket :
+socket.emit('function', 'data1', 'data2');
+
+To broadcast to everyone but the client :
+socket.broadcast.emit('function', 'data1', 'data2');

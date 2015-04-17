@@ -1,0 +1,74 @@
+Reward File Input Format
+
+// SAVE values on server
+// finish button to bring player to next set of games
+// Remove options button
+5
+2
+0
+1
+2
+100
+100
+0
+100
+100
+100
+
+inital reward money for coming in
+Numbers of options (2 or 3)
+Probability or Static (0 or 1)
+Score Matrix
+Player 1 Choice 1 Score
+Player 2 Choice 1 Score
+
+Player 1 Choice 1 Score
+Player 2 Choice 2 Score
+
+Player 1 Choice 2 Score
+Player 2 Choice 1 Score
+
+Player 1 Choice 2 Score
+Player 2 Choice 2 Score
+
+Probabilities // score of 1 each time
+Player 1 Choice 1 Score
+Player 2 Choice 1 Score
+
+Player 1 Choice 1 Score
+Player 2 Choice 2 Score
+
+Player 1 Choice 2 Score
+Player 2 Choice 1 Score
+
+Player 1 Choice 2 Score
+Player 2 Choice 2 Score
+
+or
+
+Player 1 Choice 1 Score
+Player 2 Choice 1 Score
+
+Player 1 Choice 1 Score
+Player 2 Choice 2 Score
+
+Player 1 Choice 1 Score
+Player 2 Choice 3 Score
+
+Player 1 Choice 2 Score
+Player 2 Choice 1 Score
+
+Player 1 Choice 2 Score
+Player 2 Choice 2 Score
+
+Player 1 Choice 2 Score
+Player 2 Choice 3 Score
+
+Player 1 Choice 3 Score
+Player 2 Choice 1 Score
+
+Player 1 Choice 3 Score
+Player 2 Choice 2 Score
+
+Player 1 Choice 3 Score
+Player 2 Choice 3 Score

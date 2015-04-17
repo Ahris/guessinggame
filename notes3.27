@@ -1,0 +1,49 @@
+// TO DO
+N player -
+ enter market = total to split / num players - constant = score
+ stay out of market = -5 (a constant)
+ make a general max num of players.
+
+box to show money - $15 for 1 player, $15 for 2 player?
+$5 show up// TO DO
+N player -
+ enter market = total to split / num players - constant = score
+ stay out of market = -5 (a constant)
+ make a general max num of players.
+
+box to show money - $15 for 1 player, $15 for 2 player?
+$5 show up
+$5 single player
+$10 deterministic 2 player to split
+$10 deterministic 2 player to split
+
+Two option mode - session number yay
+pay off matrix file to upload
+no pop up
+
+standard
+10/10 0/200
+200/0 100/100
+
+stochastic
+.8/.5 .7/.1
+.2/.3 .5/.5
+
+~not hard coded~
+money pay off =
+$5 coming in
+singel player = $5
+stochastic/standard - each point = 10cents
+Session id of moneya and user id across game modes.
+
+Two option mode - session number yay
+pay off matrix file to upload
+no pop up
+
+standard
+1/1 0/2
+2/0 1/1
+
+stochastic
+.8/.5 .7/.1
+.2/.3 .5/.5
