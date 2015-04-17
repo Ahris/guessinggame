@@ -71,6 +71,20 @@
       </div>
     </div>
 
+    <!-- Waiting for opp modal -->
+    <div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true" id="oppTurnModal">
+      <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+
+          <div class="modal-header">
+            <h4 class="modal-title" id="myModalLabel">Waiting for Opponent's turn</h4>
+          </div>
+
+          <p id="gameModalPadding">I wonder what move they will choose!</p>
+        </div>
+      </div>
+    </div>
+
     <!-- Join game modal -->
     <div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true" id="joinModal">
       <div class="modal-dialog">
@@ -199,7 +213,18 @@
             0
           </div>
         </div>
+        <div class="panel panel-primary gameScoreBox">
+          <div class="panel-heading">
+            <h3 class="panel-title" id="panel-title">
+              Turn Score
+            </h3>
+          </div>
+          <div class="panel-body counter" id="turnScore">
+            0
+          </div>
+        </div>
 
+<!--
         <div class="gameStats">
           <div class="panel panel-success gameInfoBox">
             <div class="panel-heading">
@@ -231,10 +256,10 @@
               0
             </div>
           </div>
-        </div>
+        </div>-->
       </div>
 
-      <div class="panel panel-primary" id="gameResultsPanel">
+      <!-- <div class="panel panel-primary" id="gameResultsPanel">
         <div class="panel-heading">
           <h3 class="panel-title" id="panel-title">
             Prev Game's Results
@@ -247,7 +272,7 @@
             <div id="resultMessage"></div>
           </div>
         </div>
-      </div>
+      </div> -->
 
       <hr class="gameHr">
       <div class="gameRound">

@@ -112,7 +112,7 @@ $(document).ready(function() {
     //
     //     if(useViewOpponent) {
     //         var resultStr = "The cpu played ";
-    //         switch(cpuChoice) {
+    //         switch(oppChoice) {
     //             case 0:
     //                 log[0][3] = "rock";
     //                 resultStr = resultStr.concat("rock.");
@@ -185,7 +185,7 @@ $(document).ready(function() {
 //
 //   unselectOption();
 //   playerChoice = null;
-//   cpuChoice = null;
+//   oppChoice = null;
 //   //$("#gameResultModal").modal("hide");
 // }
 
@@ -206,8 +206,8 @@ function sendGameData() {
         turnNum:        curRound,
         timeElapsed:    milliSecEllapsed,
         playerChoice:   choiceEnum[playerChoice],
-        cpuChoice:      choiceEnum[cpuChoice],
-        turnScore:      dScore,
+        oppChoice:      choiceEnum[oppChoice],
+        turnScore:      turnScore,
         totalScore:     score,
         result:         resultEnum[gameResult],
         totalGames:     numRounds,
@@ -232,15 +232,15 @@ function sendGameData() {
 * Computer - 2
 */
 function getWinner() {
-    cpuChoice = getCPUMove();
-    if(playerChoice == cpuChoice) {
+    oppChoice = getCPUMove();
+    if(playerChoice == oppChoice) {
         return 0;
     }
 
     // Player is scissors
     if(playerChoice == 2) {
         // cpu is paper
-        if(cpuChoice == 1) {
+        if(oppChoice == 1) {
             return 1;
         } else {
             // cpu is rock
@@ -248,7 +248,7 @@ function getWinner() {
         }
     }
 
-    if(playerChoice > cpuChoice) {
+    if(playerChoice > oppChoice) {
         return 1;
     } else {
         return 2;
@@ -261,9 +261,9 @@ function getWinner() {
  */
 function getScore(result) {
     if(useStandardScore) {
-        return standardScoreArray[playerChoice][cpuChoice];
+        return standardScoreArray[playerChoice][oppChoice];
     } else {
-        return Math.random() < stochScoreArray[playerChoice][cpuChoice];
+        return Math.random() < stochScoreArray[playerChoice][oppChoice];
     }
 }
 
@@ -274,9 +274,9 @@ function updateMoneyPayoff(result) {
   var result = 0;
 
   if(useStandardScore) {
-      result = standardScoreArray[playerChoice][cpuChoice];
+      result = standardScoreArray[playerChoice][oppChoice];
   } else {
-      result = Math.random() < stochScoreArray[playerChoice][cpuChoice];
+      result = Math.random() < stochScoreArray[playerChoice][oppChoice];
   }
 
   totalMoney += result;

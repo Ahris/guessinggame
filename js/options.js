@@ -1,91 +1,62 @@
 // Options
 // Standard score = 1, stochastic score = 0;
 // View Opponent = 1, Hide oppinent = 0;
-var useStandardScore    = 1;
-var useViewOpponent     = 1;
-var useThreeChoices     = 1;
-var numRounds           = 500;
+var useStandardScore = 1;
+var useViewOpponent  = 1;
+var useThreeChoices  = 1;
+var numRounds        = 500;
+var curRound         = 1;
 
 // Game data
-var playerId            = null;
-var gameId              = null;
-var playerChoice        = null;
-var cpuChoice           = null;
-var gameResult          = null;
-var curRound            = 1;
-var wins                = 0;
-var ties                = 0;
-var losses              = 0;
-var score               = 0;
-var dScore              = 0;
-var totalMoney          = 0;
-var socketio            = null;
+var playerChoice = null;
+var oppChoice    = null;
+var score        = 0;
+var turnScore    = 0;
+var oppTurnScore = 0;
+var totalMoney   = 0;
+//var gameResult          = null;
+// var wins                = 0;
+// var ties                = 0;
+// var losses              = 0;
+
+// Socketio variables
+var socketio        = null;
+var joinSuccess     = false;
+var makeGameSuccess = false;
+var playerId        = null;
+var gameId          = null;
 
 // Text Strings
-var standardScoreStr    = "Standard Score";
-var stochasticScoreStr  = "Stochastic Score";
-var viewOpponentStr     = "View Opponent";
-var hideOpponentStr     = "Hide Opponent";
-var twoChoices          = "2 Choices";
-var threeChoices        = "3 Choices";
-var winStr              = "Win";
-var loseStr             = "Lose";
+var standardScoreStr   = "Standard Score";
+var stochasticScoreStr = "Stochastic Score";
+var viewOpponentStr    = "View Opponent";
+var hideOpponentStr    = "Hide Opponent";
+var twoChoices         = "2 Choices";
+var threeChoices       = "3 Choices";
+var winStr             = "Win";
+var loseStr            = "Lose";
 
+// Enums
 var choiceEnum = ["rock", "paper", "scissors"];
 var resultEnum = ["tie", "win", "lose"];
 var oppEnum    = ["hide", "view"];
 var scoreEnum  = ["stochastic", "standard"];
 
-// Timing variables
-var d           = new Date();
-var startTime   = 0;
-var endTime     = 0;
+// Timing variables, updated client side
+var d         = new Date();
+var startTime = 0;
+var endTime   = 0;
 
 // Log of last three games
 // Each row is an entry consisting of:
 // Player win/lose, move, CPU win/los, move
-var log = new Array(3);
+var log = [];
 for (var i = 0; i < 3; ++i) {
-    log[i] = new Array(4);
-    for(var j = 0; j < 4; ++j) {
-        log[i][j] = "null";
-    }
+    log[i] = [];
 }
-
-// 3D array of the score matrix
-// row = playerChoice, col = cpuChoice,
-// not needed in single player mode: inner = [+playerScore, +CPUScore]
-var standardScoreArray      = new Array(3);
-var stochScoreArray         = new Array(3);
-for(var i = 0; i < 3; ++i) {
-    standardScoreArray[i]   = new Array(3);
-    stochScoreArray[i]      = new Array(3);
-}
-
-standardScoreArray[0][0] = 1;
-standardScoreArray[0][1] = 1;
-standardScoreArray[0][2] = 1;
-standardScoreArray[1][0] = 1;
-standardScoreArray[1][1] = 1;
-standardScoreArray[1][2] = 1;
-standardScoreArray[2][0] = 1;
-standardScoreArray[2][1] = 1;
-standardScoreArray[2][2] = 1;
-
-stochScoreArray[0][0] = .5;
-stochScoreArray[0][1] = .5;
-stochScoreArray[0][2] = .5;
-stochScoreArray[1][0] = .5;
-stochScoreArray[1][1] = .5;
-stochScoreArray[1][2] = .5;
-stochScoreArray[2][0] = .5;
-stochScoreArray[2][1] = .5;
-stochScoreArray[2][2] = .5;
 
 $(document).ready(function() {
-  /**
-  * Options menu setup
-  */
+  // Set up option menu
   $("#gameViewOpponent").click(function() {
       $("#gameOppDropdown").html(viewOpponentStr);
   });
