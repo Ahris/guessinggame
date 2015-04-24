@@ -7,13 +7,15 @@
 $(document).ready(function() {
     //$("#optionPopUp").load("options.html");
 
+    /////////////////////////////////////////////////////////////////////
+    // Setting up a game
+    /////////////////////////////////////////////////////////////////////
     // Communicating with the server
     socketio = io.connect();
 
-    // TODO Query the server for the next player
-    playerId = 0;
 
-    startTime = d.getTime();
+    // Not including time any more
+    //startTime = d.getTime();
 
     // /**
     // * Prevent the user from leaving
@@ -48,6 +50,21 @@ $(document).ready(function() {
     //$("#options").click(openOptions);
 
     openOptions();
+
+    // Starting the game, send data to server
+    $("#saveOptions").click(function() {
+        console.log("save options yay");
+
+        // Send the game options
+        socketio.emit("start_single_player", {
+            useStandardScore:   useStandardScore,
+            useViewOpponent:    useViewOpponent,
+            useThreeChoices:    useThreeChoices,
+            numRounds:          numRounds
+        });
+
+        console.log("sent game data to server");
+    });
 
     // /**
     // * Submit button pressed
@@ -158,154 +175,74 @@ $(document).ready(function() {
     });
 });
 
-// function continueGame() {
-//   startTime = d.getTime();
-//   ++curRound;
-//
-//   // Continue to next game
-//   if(curRound <= numRounds) {
-//       $("#gameRoundNumber").html(curRound);
-//       $("#prev1Num").html(curRound - 1);
-//       $("#prev2Num").html(curRound - 2);
-//       $("#prev3Num").html(curRound - 3);
-//   }
-//
-//   // Update displayed log
-//   var text1 = "You " + log[0][0] + " with " + log[0][1] +
-//               ". Opponent " + log[0][2] + " with " + log[0][3] + ".";
-//               $("#prev1Message").html(text1);
-//
-//   var text2 = "You " + log[1][0] + " with " + log[1][1] +
-//               ". Opponent " + log[1][2] + " with " + log[1][3] + ".";
-//               $("#prev2Message").html(text2);
-//
-//   var text3 = "You " + log[2][0] + " with " + log[2][1] +
-//               ". Opponent " + log[2][2] + " with " + log[2][3] + ".";
-//               $("#prev3Message").html(text3);
-//
-//   unselectOption();
-//   playerChoice = null;
-//   oppChoice = null;
-//   //$("#gameResultModal").modal("hide");
-// }
-
-/**
- * Send the game data to the server
- * Server will save the data into the database
- */
-function sendGameData() {
-    // socketio.on("single_player_data",function(data) {
-    //     //Append an HR thematic break and the escaped HTML of the new message
-    //     document.getElementById("chatlog").appendChild(document.createElement("hr"));
-    //     document.getElementById("chatlog").appendChild(document.createTextNode(data['message']));
-    // });
-    var milliSecEllapsed = endTime - startTime;
-
-    socketio.emit("single_player_data", {
-        userId:         playerId,
-        turnNum:        curRound,
-        timeElapsed:    milliSecEllapsed,
-        playerChoice:   choiceEnum[playerChoice],
-        oppChoice:      choiceEnum[oppChoice],
-        turnScore:      turnScore,
-        totalScore:     score,
-        result:         resultEnum[gameResult],
-        totalGames:     numRounds,
-        scoreMode:      scoreEnum[useStandardScore],
-        oppMode:        oppEnum[useViewOpponent]
-    });
-}
-
-// /**
-//  * Deselects the currently chosen move button
-//  */
-// function unselectOption() {
-//     $("#scissors").removeClass("active");
-//     $("#paper").removeClass("active");
-//     $("#rock").removeClass("active");
-// }
-
-/**
-* Returns winner
-* Tie - 0
-* Player - 1
-* Computer - 2
-*/
-function getWinner() {
-    oppChoice = getCPUMove();
-    if(playerChoice == oppChoice) {
-        return 0;
-    }
-
-    // Player is scissors
-    if(playerChoice == 2) {
-        // cpu is paper
-        if(oppChoice == 1) {
-            return 1;
-        } else {
-            // cpu is rock
-            return 2;
-        }
-    }
-
-    if(playerChoice > oppChoice) {
-        return 1;
-    } else {
-        return 2;
-    }
-}
-
-/**
- * Return the number of points earned by the player
- * Can be determined statically or stochastically.
- */
-function getScore(result) {
-    if(useStandardScore) {
-        return standardScoreArray[playerChoice][oppChoice];
-    } else {
-        return Math.random() < stochScoreArray[playerChoice][oppChoice];
-    }
-}
-
-/**
- * Returns the total amount of money earned so far
- */
-function updateMoneyPayoff(result) {
-  var result = 0;
-
-  if(useStandardScore) {
-      result = standardScoreArray[playerChoice][oppChoice];
-  } else {
-      result = Math.random() < stochScoreArray[playerChoice][oppChoice];
-  }
-
-  totalMoney += result;
-  roundThousandths(totalMoney);
-  return totalMoney;
-}
-
-/**
-* Returns the computer's move
-* Currently returning a random move
-* Rock - 0
-* Paper - 1
-* Scissors - 2
-*/
-function getCPUMove() {
-    var rand = Math.random();
-
-    if(rand < 1/3) {
-        return 0;
-    } else if(rand >= 1/3 && rand < 2/3) {
-        return 1;
-    } else {
-        return 2;
-    }
-}
-
 /**
  *  Returns money rounded to three digits
  */
  function roundThousandths(decimal) {
    return Math.round(decimal * 1000) / 1000;
  }
+
+// Send move to server
+function sendAndGetResult() {
+ console.log("sending result: playerChoice " + playerChoice );
+
+ // Send the current move
+ socketio.emit("submit_single_player_move", {
+     playerId:playerId,
+     gameId:gameId,
+     playerChoice:playerChoice
+ });
+
+ // Params
+ // totalScore:game.player1Score,
+ // turnScore:game.player1TurnScore,
+ // opponentChoice:game.player2Choice
+ // opponentTurnScore:game.player2TurnScore
+ // donePlaying:donePlaying
+ socketio.on("single_game_result", function(data){
+     console.log("got game results!");
+     console.log("totalScore: " + data["totalScore"]);
+     console.log("turnScore: " + data["turnScore"]);
+     console.log("opponentChoice: " + data["opponentChoice"]);
+     console.log("opponentTurnScore: " + data["opponentTurnScore"]);
+     console.log("doneplaying: " + data["donePlaying"]);
+
+     // Set the game data in appropriate vars.
+     oppChoice    = data["opponentChoice"];
+     score        = data["totalScore"];
+     turnScore    = data["turnScore"];
+     oppTurnScore = data["opponentTurnScore"];
+
+     $("#scoreNumber").html(score);
+     $("#turnScore").html("+" + turnScore);
+
+     // Update log array
+     log[2][0] = log[1][0]; log[2][1] = log[1][1];
+     log[2][2] = log[1][2]; log[2][3] = log[1][3];
+     log[1][0] = log[0][0]; log[1][1] = log[0][1];
+     log[1][2] = log[0][2]; log[1][3] = log[0][3];
+
+     log[0][0] = choiceEnum[playerChoice];
+     log[0][1] = turnScore;
+     log[0][2] = choiceEnum[oppChoice];
+     log[0][3] = oppTurnScore;
+
+     //turnScore = getScore(gameResult)
+     //score += turnScore;
+     //score = roundThousandths(score);
+
+     // Check if done playing
+     if(data["donePlaying"]) {
+         console.log("done playing, modal should show now");
+
+         // Prevent user from exiting the pop up
+         $("#donePlayingModal").modal({
+             backdrop: "static",
+             keyboard: false
+         });
+         $("#donePlayingModal").modal("show");
+     }
+
+     continueGame();
+ });
+}

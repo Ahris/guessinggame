@@ -1,6 +1,5 @@
 $(document).domain = "54.69.129.39";
 $(document).ready(function() {
-
     // Communicating with the server
     socketio = io.connect("http://54.69.129.39:1337/");
     // var joinSuccess = false; // VARS MOVED TO OPTION.js
@@ -19,6 +18,10 @@ $(document).ready(function() {
 
     // Asking to join a specific game id
     $("#submitJoinGame").click(function() {
+        // Disable the button from being clicked twice
+        $("#submitJoinGame").attr("disabled", "disabled");
+
+        // Hide the error box
         $("#gameIdError").hide();
 
         var requestedGameId = $("#inputGameId").val();
@@ -33,6 +36,9 @@ $(document).ready(function() {
             console.log("Need a valid game id");
             $("#gameIdError").show();
         }
+
+        // Let the button be clicked again
+        $("#submitJoinGame").removeAttr('disabled');
     });
 
     // Start the game for the joining player
@@ -68,6 +74,12 @@ $(document).ready(function() {
 
             startTime = d.getTime();
         }
+    });
+
+    // Couldn't join game. Game Id was invalid
+    socketio.on("join_game_failure", function(data) {
+        console.log("join gamefailure");
+        $("#gameIdError").show();
     });
 
     /////////////////////////////////////////////////////////////////////
@@ -155,19 +167,21 @@ function sendAndGetResult() {
     // turnScore:game.player1TurnScore,
     // opponentChoice:game.player2Choice
     // opponentTurnScore:game.player2TurnScore
+    // donePlaying:donePlaying
     socketio.on("game_result", function(data){
         console.log("got game results!");
         console.log("totalScore: " + data["totalScore"]);
         console.log("turnScore: " + data["turnScore"]);
         console.log("opponentChoice: " + data["opponentChoice"]);
         console.log("opponentTurnScore: " + data["opponentTurnScore"]);
+        console.log("doneplaying: " + data["donePlaying"]);
 
         // Set the game data in appropriate vars.
         oppChoice    = data["opponentChoice"];
         score        = data["totalScore"];
         turnScore    = data["turnScore"];
         oppTurnScore = data["opponentTurnScore"];
-        
+
         $("#scoreNumber").html(score);
         $("#turnScore").html("+" + turnScore);
 
@@ -186,25 +200,19 @@ function sendAndGetResult() {
         //score += turnScore;
         //score = roundThousandths(score);
 
-        // TODO Caluclate money earned
-        //updateMoneyPayoff(gameResult);
-        //$("#moneyNumber").html(totalMoney);
+        // Check if done playing
+        if(data["donePlaying"]) {
+            console.log("done playing, modal should show now");
 
-        // Done playing
-        if(curRound == numRounds) {
-            $("#resultMessage").html("Thanks for playing! Data is saved and you can exit.");
-
-            $(window).bind("beforeunload", function() {
-                return "Thanks for playing!";
+            // Prevent user from exiting the pop up
+            $("#donePlayingModal").modal({
+                backdrop: "static",
+                keyboard: false
             });
-
-            $("#continue").hide();
+            $("#donePlayingModal").modal("show");
         }
 
-        //sendGameData();
-        //$("#gameResultModal").modal("show");
         continueGame();
-
         $("#oppTurnModal").modal("hide");
     });
 }

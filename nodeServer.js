@@ -7,6 +7,17 @@ var mysql = require('mysql');
 var sqlConnection  = mysql.createConnection({
     host      : 'localhost',
     database  : 'rps_data',
+    user      : 'wustl',
+    password  : 'rps123',
+});
+
+sqlConnection.connect(function(err) {
+  // connected! (unless `err` is set)
+  if(err) {
+      console.log("error with mysql");
+  } else {
+      console.log("mysql is connected");
+  }
 });
 
 var express = require('express');
@@ -32,67 +43,33 @@ var lastPlayerId      = 100;
 var gameIdToObject    = {}; // Associative array, not a standard array
 var numMovesReceived  = 0;
 
-// Score matricies
-// row = playerChoice, col = cpuChoice,
-// 3 choice score matrix
-var standardScoreArray3     = [];
-var stochScoreArray3        = [];
-for(var i = 0; i < 3; ++i) {
-    standardScoreArray3[i]   = [];
-    stochScoreArray3[i]      = [];
-}
-
-// 2 choice score matrix
-var standardScoreArray2     = [];
-var stochScoreArray2        = [];
-for(var i = 0; i < 2; ++i) {
-    standardScoreArray2[i]   = [];
-    stochScoreArray2[i]      = [];
-}
-
 // Hard coded because we only need to change these settings very infrequently!
 // Standard Score Matrix, 3 choices. Format: [p1 Score, p2 Score]
-standardScoreArray3[0][0] = [1, 1];
-standardScoreArray3[0][1] = [1, 1];
-standardScoreArray3[0][2] = [1, 1];
-standardScoreArray3[1][0] = [1, 1];
-standardScoreArray3[1][1] = [1, 1];
-standardScoreArray3[1][2] = [1, 1];
-standardScoreArray3[2][0] = [1, 1];
-standardScoreArray3[2][1] = [1, 1];
-standardScoreArray3[2][2] = [1, 1];
+var standardScoreArray3 = [1, 1, 1, 1, 1, 1,
+                           1, 1, 1, 1, 1, 1,
+                           1, 1, 1, 1, 1, 1];
 
 // Stochastic Score Matrix, 3 choices
-stochScoreArray3[0][0] = [1, 1];
-stochScoreArray3[0][1] = [1, 1];
-stochScoreArray3[0][2] = [1, 1];
-stochScoreArray3[1][0] = [1, 1];
-stochScoreArray3[1][1] = [1, 1];
-stochScoreArray3[1][2] = [1, 1];
-stochScoreArray3[2][0] = [1, 1];
-stochScoreArray3[2][1] = [1, 1];
-stochScoreArray3[2][2] = [1, 1];
+var stochScoreArray3 = [.5, .5, .5, .5, .5, .5,
+                        .5, .5, .5, .5, .5, .5,
+                        .5, .5, .5, .5, .5, .5];
 
 // Standard Score Matrix, 2 choices
-standardScoreArray2[0][0] = [1, 1];
-standardScoreArray2[0][1] = [1, 1];
-standardScoreArray2[0][2] = [1, 1];
-standardScoreArray2[1][0] = [1, 1];
+var standardScoreArray2 = [2, 2, 1, 3,
+                           3, 1, 0, 0];
 
 // Stochastic Score Matrix, 2 choices
-stochScoreArray2[0][0] = [1, 1];
-stochScoreArray2[0][1] = [1, 1];
-stochScoreArray2[0][2] = [1, 1];
-stochScoreArray2[1][0] = [1, 1];
+var stochScoreArray2 = [.5, .5, .2, .8,
+                        .8, .2, .1, .1];
 
 // gameObject class to hold the data for one game
 function GameObject(useStandardScore, useViewOpponent,
-    useThreeChoices, numRounds, gameId, playerId1) {
+    useThreeChoices, totalRounds, gameId, playerId1) {
 
         this.useStandardScore   = useStandardScore;
         this.useViewOpponent    = useViewOpponent;
         this.useThreeChoices    = useThreeChoices;
-        this.numRounds          = numRounds;
+        this.totalRounds        = totalRounds;
         this.curRound           = 0;
         this.gameId             = gameId;
         this.playerId1          = null;
@@ -116,26 +93,113 @@ console.log("server started up");
 socketio.sockets.on('connection', function (socket) {
     console.log('on connection');
 
-    // Receiving single player data
-    // TODO: Will calculate score and win/loss
-    socket.on("single_player_data", function(data) {
-        var input = JSON.stringify(data);
-        var json = JSON.parse(data);
+    ////////////////////////////////////////////////////////////////
+    // Single Player
+    ////////////////////////////////////////////////////////////////
+    // useStandardScore:   useStandardScore,
+    // useViewOpponent:    useViewOpponent,
+    // useThreeChoices:    useThreeChoices,
+    // numRounds:          numRounds
+    socket.on("start_single_player", function(data) {
+        console.log("on the server, got a request to start single player game");
+        console.log("useStandardScore: " + data["useStandardScore"]);
+        console.log("useViewOpponent: "+ data["useViewOpponent"]);
+        console.log("useThreeChoices: " + data["useThreeChoices"]);
+        console.log("numRounds: "+ data["numRounds"]);
 
-        var query = "\
-        INSERT INTO single_player_data \
-        (userId, turnNum, timeElapsed, playerChoice, \
-            cpuChoice, turnScore, totalScore, result,\
-            totalGames, scoreMode, oppMode) \
-            VALUES (" + json.userId + ", " + json.turnNum +
-            ", " + json.timeElapsed + ", " + json.playerChoice +
-            ", " + json.cpuChoice + ", " + json.turnScore + ", " + json.totalScore + ", " + json.result + ", " + json.totalGames +
-            ", " + json.scoreMode + ", " + json.oppMode + ");";
+        // Create a game object
+        var curGameId = lastGameId;
+        var curPlayerId = lastPlayerId;
+        ++lastPlayerId;
+        ++lastGameId;
+
+        var game = new GameObject(
+            data["useStandardScore"], data["useViewOpponent"], data["useThreeChoices"], data["numRounds"], curGameId, curPlayerId
+        );
+
+        // Save the socket of player1
+        game.player1Socket = socket;
+        game.playerId1     = curPlayerId;
+        game.gameId        = curGameId;
+
+        // Save the new game in the game map
+        gameIdToObject[Number(game.gameId)] = game;
+    });
+
+    // Receiving single player data
+    //      playerId:playerId,
+    //      gameId:gameId,
+    //      playerChoice:playerChoice
+    socket.on("submit_single_player_move", function(data) {
+        console.log("------------------------");
+        console.log("got a player's move: playerid: " + data["playerId"] + " gameId: " + data["gameId"] + " player choice: " + data["playerChoice"]);
+
+        // Check for valid game id
+        var game = getGameFromDictionary(data["gameId"]);
+        if(game) {
+            // Save the move
+
+            // Check for valid player id
+            var pId = Number(data["playerId"]);
+            if(pId == Number(game.playerId1)) {
+                game.player1Choice = data["playerChoice"];
+            } else {
+                // TODO send error message to user
+                console.log("got a player ID that does not match any player");
+            }
+
+            // Calculate and save score
+            updateSinglePlayerScores(game);
+
+            // Save the moves in the database
+            // Table name = twoPlayer
+            var query = "INSERT INTO singlePlayer (gameId, player1Id, curRound, player1Choice, player1TurnScore, player1Score, totalRounds, scoreMode, oppMode, choiceMode) VALUES (" + game.gameId + ", " + game.playerId1 + ", " + game.curRound + ", " + game.player1Choice + ", " + game.player1TurnScore + ", "  + game.player1Score + ", " + game.totalRounds + ", " + game.useStandardScore + ", " + game.useViewOpponent + ", " + game.useThreeChoices + ");";
+
+            console.log("query!!!" + query);
 
             sqlConnection.query(query, function() {
-                console.log("inserted the game data");
+                console.log("inserted the two player game data");
             });
-        });
+
+            console.log("p1---")
+            console.log("player1Score: " + game.player1Score);
+            console.log("turnScore: " + game.player1TurnScore);
+            console.log("opponentChoice: " + game.player2Choice);
+            console.log("opponentTurnScore: " + game.player2TurnScore);
+            console.log("p2---")
+            console.log("player1Score: " + game.player2Score);
+            console.log("turnScore: " + game.player2TurnScore);
+            console.log("opponentChoice: " + game.player1Choice);
+            console.log("opponentTurnScore: " + game.player1TurnScore);
+
+            // Check if we're done playing
+            var donePlaying = false;
+            if((game.curRound + 1) == game.totalRounds) {
+                donePlaying = true;
+            }
+
+            // Send back total score and turn score and other player move
+            game.player1Socket.emit("game_result", {
+                totalScore:game.player1Score,
+                turnScore:game.player1TurnScore,
+                opponentChoice:game.player2Choice,
+                opponentTurnScore:game.player2TurnScore,
+                donePlaying:donePlaying
+            });
+
+            // reset the number of moves and move choice
+            game.player1Choice = null;
+            game.player2Choice = null;
+            game.curRound = game.curRound + 1;
+        } else {
+            // TODO send user some error message
+            console.log("game id was not found in submit player move");
+        }
+    });
+
+    ////////////////////////////////////////////////////////////////
+    // Multi player
+    ////////////////////////////////////////////////////////////////
 
     // Requesting to start a 2 player game
     // useStandardScore:   useStandardScore,
@@ -156,8 +220,7 @@ socketio.sockets.on('connection', function (socket) {
         ++lastGameId;
 
         var game = new GameObject(
-            data["useStandardScore"], data["useViewOpponent"],
-            data["useThreeChoices"], data["numRounds"], curGameId, curPlayerId
+            data["useStandardScore"], data["useViewOpponent"], data["useThreeChoices"], data["numRounds"], curGameId, curPlayerId
         );
 
         // Save the socket of player1
@@ -167,9 +230,6 @@ socketio.sockets.on('connection', function (socket) {
 
         // Save the new game in the game map
         gameIdToObject[Number(game.gameId)] = game;
-
-        // Save the new game into a SQL database
-        //TODO UGU HOW SQL
 
         // Pass back the game id and player id to client
         socket.emit("approve_two_player",{
@@ -203,7 +263,9 @@ socketio.sockets.on('connection', function (socket) {
                 useThreeChoices:game.useThreeChoices
             });
         } else {
+            // Let second player know they need a valid game id
             console.log("game id not found");
+            socket.emit("join_game_failure");
         }
     });
 
@@ -226,16 +288,27 @@ socketio.sockets.on('connection', function (socket) {
                 game.player2Choice = data["playerChoice"];
 
             } else {
+                // TODO send error message to user
                 console.log("got a player ID that does not match any player");
             }
 
             numMovesReceived++;
             if(numMovesReceived == 2) {
                 // We now have both moves
-                updatePlayerScores(game);
+                updateTwoPlayerScores(game);
 
                 // Save the moves in the database
-                // TODO MYSQL STUFF
+                // Table name = twoPlayer
+                var query = "INSERT INTO twoPlayer (gameId, player1Id, player2Id, curRound, player1Choice, player2Choice, player1TurnScore, player2TurnScore, player1Score, player2Score, totalRounds, scoreMode, oppMode, choiceMode) VALUES (" + game.gameId + ", " + game.playerId1 +
+                    ", " + game.playerId2 + ", " + game.curRound +
+                    ", " + game.player1Choice + ", " + game.player2Choice + ", " + game.player1TurnScore + ", " + game.player2TurnScore + ", " + game.player1Score + ", " + game.player2Score + ", " + game.totalRounds + ", " + game.useStandardScore +
+                    ", " + game.useViewOpponent + ", " + game.useThreeChoices + ");";
+
+                console.log("query!!!" + query);
+
+                sqlConnection.query(query, function() {
+                    console.log("inserted the two player game data");
+                });
 
                 console.log("p1---")
                 console.log("player1Score: " + game.player1Score);
@@ -248,18 +321,26 @@ socketio.sockets.on('connection', function (socket) {
                 console.log("opponentChoice: " + game.player1Choice);
                 console.log("opponentTurnScore: " + game.player1TurnScore);
 
+                // Check if we're done playing
+                var donePlaying = false;
+                if((game.curRound + 1) == game.totalRounds) {
+                    donePlaying = true;
+                }
+
                 // Send back total score and turn score and other player move
                 game.player1Socket.emit("game_result", {
                     totalScore:game.player1Score,
                     turnScore:game.player1TurnScore,
                     opponentChoice:game.player2Choice,
-                    opponentTurnScore:game.player2TurnScore
+                    opponentTurnScore:game.player2TurnScore,
+                    donePlaying:donePlaying
                 });
                 game.player2Socket.emit("game_result", {
                     totalScore:game.player2Score,
                     turnScore:game.player2TurnScore,
                     opponentChoice:game.player1Choice,
-                    opponentTurnScore:game.player1TurnScore
+                    opponentTurnScore:game.player1TurnScore,
+                    donePlaying:donePlaying
                 });
 
                 // reset the number of moves and move choice
@@ -269,23 +350,51 @@ socketio.sockets.on('connection', function (socket) {
                 game.curRound = game.curRound + 1;
             }
         } else {
+            // TODO send user some error message
             console.log("game id was not found in submit player move");
         }
     });
 });
 
-// Update the score for each player in the game object
-// Decide the score using the score matrix
-function updatePlayerScores(game) {
+/**
+* Returns the computer's move
+* Currently returning a random move
+* Rock - 0
+* Paper - 1
+* Scissors - 2
+*/
+function getCPUMove() {
+    var rand = Math.random();
+
+    if(rand < 1/3) {
+        return 0;
+    } else if(rand >= 1/3 && rand < 2/3) {
+        return 1;
+    } else {
+        return 2;
+    }
+}
+
+// Update score for single player mode
+function updateSinglePlayerScores(game) {
+    // Update scores
+    var player1Choice = game.player1Choice;
+    var player2Choice = getCpuMove();
+
     var scoreMatrix = null;
+    var numChoices = 0;
 
     if(game.useThreeChoices) {
+        numChoices = 3;
+
         if(game.useStandardScore) {
             scoreMatrix = standardScoreArray3;
         } else {
             scoreMatrix = stochScoreArray3;
         }
     } else {
+        numChoices = 2;
+
         if(game.useStandardScore) {
             scoreMatrix = standardScoreArray2;
         } else {
@@ -293,53 +402,87 @@ function updatePlayerScores(game) {
         }
     }
 
-    // Update scores
-    var player1Choice = game.player1Choice;
-    var player2Choice = game.player2Choice;
-
     console.log("in updating player score, got both player's moves.");
     console.log("player1Choice: " + player1Choice + " player2choice: " + player2Choice);
+    console.log("scoreMatric: " + scoreMatrix);
+    console.log("index: " + ((player1Choice * 2 + player2Choice + 0) * 2));
 
-    game.player1TurnScore = scoreMatrix[player1Choice][player2Choice][0];
-    game.player2TurnScore = scoreMatrix[player1Choice][player2Choice][1];
+    // Calculate the index of the scores
+    var p1Index = (player1Choice * numChoices + player2Choice) * 2;
+    var p2Index = (player1Choice * numChoices + player2Choice) * 2 + 1;
+
+    console.log("choice: " + scoreMatrix[p1Index]);
+
+    if(!game.useStandardScore) {
+        // Stochastic scoring
+        var chance1 = scoreMatrix[p1Index];
+        var chance2 = scoreMatrix[p2Index];
+        game.player1TurnScore = Math.random() < chance1 ? 1 : 0;
+        game.player2TurnScore = Math.random() < chance2 ? 1 : 0;
+    } else {
+        // Deterministic scoring
+        game.player1TurnScore = scoreMatrix[p1Index];
+        game.player2TurnScore = scoreMatrix[p2Index];
+    }
+
     game.player1Score += game.player1TurnScore;
     game.player2Score += game.player2TurnScore;
 }
 
-// // Return 0 if tie
-// // Returns 1 if player1 won
-// // Returns 2 if player2 won
-// // Choices: 0 = rock, 1 = paper, 2 = scissors
-// function getWinner(game, player1Choice, player2Choice) {
-//     // Tie
-//     if(player1Choice == player2Choice) {
-//         return 0;
-//     }
-//
-//     // Using three choices (Rock, paper or scissors)
-//     if(game.useThreeChoices) {
-//         // player1Choice is scissors
-//         if(player1Choice == 2) {
-//             // player2Choice is paper
-//             if(player2Choice == 1) {
-//                 return 1;
-//             } else {
-//                 // player2Choice is rock
-//                 return 2;
-//             }
-//         }
-//
-//         if(player1Choice > player2Choice) {
-//             return 1;
-//         } else {
-//             return 2;
-//         }
-//     } else {
-//         // Using Two choices (rock or paper)
-//
-//
-//     }
-// }
+// Update the score for each player in the game object
+// Decide the score using the score matrix
+function updateTwoPlayerScores(game) {
+    // Update scores
+    var player1Choice = game.player1Choice;
+    var player2Choice = game.player2Choice;
+
+    var scoreMatrix = null;
+    var numChoices = 0;
+
+    if(game.useThreeChoices) {
+        numChoices = 3;
+
+        if(game.useStandardScore) {
+            scoreMatrix = standardScoreArray3;
+        } else {
+            scoreMatrix = stochScoreArray3;
+        }
+    } else {
+        numChoices = 2;
+
+        if(game.useStandardScore) {
+            scoreMatrix = standardScoreArray2;
+        } else {
+            scoreMatrix = stochScoreArray2;
+        }
+    }
+
+    console.log("in updating player score, got both player's moves.");
+    console.log("player1Choice: " + player1Choice + " player2choice: " + player2Choice);
+    console.log("scoreMatric: " + scoreMatrix);
+    console.log("index: " + ((player1Choice * 2 + player2Choice + 0) * 2));
+
+    // Calculate the index of the scores
+    var p1Index = (player1Choice * numChoices + player2Choice) * 2;
+    var p2Index = (player1Choice * numChoices + player2Choice) * 2 + 1;
+
+console.log("choice: " + scoreMatrix[p1Index]);
+
+    if(!game.useStandardScore) {
+        // Stochastic scoring
+        var chance1 = scoreMatrix[p1Index];
+        var chance2 = scoreMatrix[p2Index];
+        game.player1TurnScore = Math.random() < chance1 ? 1 : 0;
+        game.player2TurnScore = Math.random() < chance2 ? 1 : 0;
+    } else {
+        // Deterministic scoring
+        game.player1TurnScore = scoreMatrix[p1Index];
+        game.player2TurnScore = scoreMatrix[p2Index];
+    }
+
+    game.player1Score += game.player1TurnScore;
+    game.player2Score += game.player2TurnScore;
+}
 
 // Return the game object from the game mapping
 // Check to make sure the game ID is valid

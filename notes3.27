@@ -47,3 +47,27 @@ standard
 stochastic
 .8/.5 .7/.1
 .2/.3 .5/.5
+
+=======================================
+Matrix as of 4/23
+The followings are the payoffs for 1 player game and 2-player games (including deterministic payoff and stochastic payoff)
+
+1 player game
+================================================
+action A: 2 with probability 90%, -2 with probability 10%
+action B: 1.4 with certainty
+================================================
+
+
+2-player game
+===============================================
+deterministic payoff
+                        action A          action B
+action A:           2, 2                    1, 3
+action B:           3, 1                     0, 0
+===============================================
+stochastic payoff
+                        action A          action B
+action A:           0.5, 0.5               0.2, 0.8
+action B:           0.8, 0.2               0.1, 0.1
+===============================================

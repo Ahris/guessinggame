@@ -1,0 +1,83 @@
+<!-- Done playing modal -->
+<div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true" id="donePlayingModal">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h4 class="modal-title" id="myModalLabel">Thanks for playing!</h4>
+      </div>
+
+      <p id="gameModalPadding">You have finished your required number of games. Thanks for participating! Your data is saved and you can now exit.</p>
+    </div>
+  </div>
+</div>
+
+<!--<div id="optionPopUp"></div>-->
+<!-- Options Modal -->
+<div class="modal fade" id="gameOptionModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Options</h4>
+      </div>
+      <div class="modal-body">
+
+        <!--Num Rounds-->
+        <div class="input-group">
+          <span class="input-group-addon" id="sizing-addon2">
+            Number of Rounds
+          </span>
+          <input type="text" class="form-control" id="numRoundsField" placeholder="500" aria-describedby="sizing-addon2">
+        </div>
+
+        <!--Score Mode-->
+        <div class="btn-group gameDropdown">
+          <button type="button" class="btn btn-default" id="gameScoreDropdown">
+            Standard Score
+          </button>
+          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+            <span class="caret"></span>
+            <span class="sr-only">Toggle Dropdown</span>
+          </button>
+          <ul class="dropdown-menu" role="menu">
+            <li> <a id="gameStandardScore">Standard Score</a></li>
+            <li> <a id="gameStochasticScore">Stochastic Score</a></li>
+          </ul>
+        </div>
+
+        <!--See Opponent-->
+        <div class="btn-group gameDropdown">
+          <button type="button" class="btn btn-default" id="gameOppDropdown">View Opponent</button>
+          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+            <span class="caret"></span>
+            <span class="sr-only">Toggle Dropdown</span>
+          </button>
+          <ul class="dropdown-menu" role="menu">
+            <li><a id="gameViewOpponent">View Opponent</a></li>
+            <li><a id="gameHideOpponent">Hide Opponent</a></li>
+          </ul>
+        </div>
+
+        <!--Num Choices-->
+        <div class="btn-group gameDropdown">
+          <button type="button" class="btn btn-default" id="gameNumChoicesDropdown">3 Choices</button>
+          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+            <span class="caret"></span>
+            <span class="sr-only">Toggle Dropdown</span>
+          </button>
+          <ul class="dropdown-menu" role="menu">
+            <li><a id="game2Choices">2 Choices</a></li>
+            <li><a id="game3Choices">3 Choices</a></li>
+          </ul>
+        </div>
+        <!-- </br> </br>
+        <textarea class="form-control" id="rewardInputValues" rows="3" placeholder="Paste reward input file here"></textarea> -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="saveOptions">Submit and Start</button>
+      </div>
+    </div>
+  </div>
+</div>

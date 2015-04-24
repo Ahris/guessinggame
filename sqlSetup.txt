@@ -6,19 +6,37 @@ flush PRIVILEGES;
 
 CREATE DATABASE rps_data;
 
+CREATE TABLE twoPlayer (
+    pId MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    gameId MEDIUMINT UNSIGNED NOT NULL,
+	player1Id MEDIUMINT UNSIGNED NOT NULL,
+    player2Id MEDIUMINT UNSIGNED NOT NULL,
+    curRound MEDIUMINT UNSIGNED NOT NULL,
+    player1Choice ENUM('rock', 'paper', 'scissors') NOT NULL,
+    player2Choice ENUM('rock', 'paper', 'scissors') NOT NULL,
+    player1TurnScore DECIMAL(10, 3) NOT NULL,
+    player2TurnScore DECIMAL(10, 3) NOT NULL,
+    player1Score DECIMAL(10, 3) NOT NULL,
+    player2Score DECIMAL(10, 3) NOT NULL,
+    totalRounds MEDIUMINT UNSIGNED NOT NULL,
+    scoreMode ENUM('stochastic', 'standard') NOT NULL,
+    oppMode ENUM('hide', 'view') NOT NULL,
+    choiceMode ENUM('two', 'three') NOT NULL,
+    PRIMARY KEY (pId)
+) engine = INNODB DEFAULT character SET = utf8 COLLATE = utf8_general_ci;
+
 CREATE TABLE singlePlayer (
     pId MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT,
-	userId MEDIUMINT UNSIGNED NOT NULL,
-    turnNum MEDIUMINT UNSIGNED NOT NULL,
-    timeElapsed DECIMAL(10, 3) NOT NULL,
+    gameId MEDIUMINT UNSIGNED NOT NULL,
+	playerId MEDIUMINT UNSIGNED NOT NULL,
+    curRound MEDIUMINT UNSIGNED NOT NULL,
     playerChoice ENUM('rock', 'paper', 'scissors') NOT NULL,
-    cpuChoice ENUM('rock', 'paper', 'scissors') NOT NULL,
-    turnScore DECIMAL(10, 3) NOT NULL,
-    totalScore DECIMAL(10, 3) NOT NULL,
-    result ENUM('win', 'tie', 'lose') NOT NULL,
-    totalGames MEDIUMINT UNSIGNED NOT NULL,
-    scoreMode ENUM('standard', 'stochastic') NOT NULL,
-    oppMode ENUM('view', 'hide') NOT NULL,
+    playerTurnScore DECIMAL(10, 3) NOT NULL,
+    playerScore DECIMAL(10, 3) NOT NULL,
+    totalRounds MEDIUMINT UNSIGNED NOT NULL,
+    scoreMode ENUM('stochastic', 'standard') NOT NULL,
+    oppMode ENUM('hide', 'view') NOT NULL,
+    choiceMode ENUM('two', 'three') NOT NULL,
     PRIMARY KEY (pId)
 ) engine = INNODB DEFAULT character SET = utf8 COLLATE = utf8_general_ci;
 
@@ -38,6 +56,10 @@ On the server, currently dropping the files at
 /var/www/html/
 the node stuff it at:
 /home/ubuntu/public_html
+
+Signing in to mysql:
+mysql -u wustl -p rps_data
+password: rps123
 
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
