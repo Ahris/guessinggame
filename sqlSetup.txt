@@ -95,3 +95,11 @@ socket.emit('function', 'data1', 'data2');
 
 To broadcast to everyone but the client :
 socket.broadcast.emit('function', 'data1', 'data2');
+
+///////////////////////////////////////////////////////////////////////////
+http://www.bennadel.com/blog/2321-how-i-got-node-js-running-on-a-linux-micro-instance-using-amazon-ec2.htm
+using forever to have node server run even when you're not connected
+
+//////////////////////////////////////////////////////////////////////////
+delete all entries in a table
+Truncate table tableName

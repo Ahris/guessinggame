@@ -23,10 +23,6 @@
   background-color: #99FF66;
 }
 
-#gameModalPadding {
-  padding: 25px;
-}
-
 #gameIdError {
   color: red;
   font-style: italic;

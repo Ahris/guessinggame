@@ -70,7 +70,7 @@ function GameObject(useStandardScore, useViewOpponent,
         this.useViewOpponent    = useViewOpponent;
         this.useThreeChoices    = useThreeChoices;
         this.totalRounds        = totalRounds;
-        this.curRound           = 0;
+        this.curRound           = 1;
         this.gameId             = gameId;
         this.playerId1          = null;
         this.playerId2          = null;
@@ -124,6 +124,15 @@ socketio.sockets.on('connection', function (socket) {
 
         // Save the new game in the game map
         gameIdToObject[Number(game.gameId)] = game;
+
+        // tell the player their game is approved
+        // Pass back the game id and player id to client
+        socket.emit("approve_single_player",{
+            gameId:game.gameId,
+            playerId:game.playerId1
+        });
+
+        console.log("should have sent approval of single player");
     });
 
     // Receiving single player data
@@ -153,7 +162,7 @@ socketio.sockets.on('connection', function (socket) {
 
             // Save the moves in the database
             // Table name = twoPlayer
-            var query = "INSERT INTO singlePlayer (gameId, player1Id, curRound, player1Choice, player1TurnScore, player1Score, totalRounds, scoreMode, oppMode, choiceMode) VALUES (" + game.gameId + ", " + game.playerId1 + ", " + game.curRound + ", " + game.player1Choice + ", " + game.player1TurnScore + ", "  + game.player1Score + ", " + game.totalRounds + ", " + game.useStandardScore + ", " + game.useViewOpponent + ", " + game.useThreeChoices + ");";
+            var query = "INSERT INTO singlePlayer (gameId, playerId, curRound, playerChoice, playerTurnScore, playerScore, totalRounds, scoreMode, oppMode, choiceMode) VALUES (" + game.gameId + ", " + game.playerId1 + ", " + game.curRound + ", " + game.player1Choice + ", " + game.player1TurnScore + ", "  + game.player1Score + ", " + game.totalRounds + ", " + game.useStandardScore + ", " + game.useViewOpponent + ", " + game.useThreeChoices + ");";
 
             console.log("query!!!" + query);
 
@@ -174,17 +183,18 @@ socketio.sockets.on('connection', function (socket) {
 
             // Check if we're done playing
             var donePlaying = false;
-            if((game.curRound + 1) == game.totalRounds) {
+            if((game.curRound) == game.totalRounds) {
                 donePlaying = true;
             }
 
             // Send back total score and turn score and other player move
-            game.player1Socket.emit("game_result", {
+            game.player1Socket.emit("single_game_result", {
                 totalScore:game.player1Score,
                 turnScore:game.player1TurnScore,
                 opponentChoice:game.player2Choice,
                 opponentTurnScore:game.player2TurnScore,
-                donePlaying:donePlaying
+                donePlaying:donePlaying,
+                curRound:game.curRound
             });
 
             // reset the number of moves and move choice
@@ -307,7 +317,7 @@ socketio.sockets.on('connection', function (socket) {
                 console.log("query!!!" + query);
 
                 sqlConnection.query(query, function() {
-                    console.log("inserted the two player game data");
+                    console.log("inserted the single player game data");
                 });
 
                 console.log("p1---")
@@ -323,7 +333,7 @@ socketio.sockets.on('connection', function (socket) {
 
                 // Check if we're done playing
                 var donePlaying = false;
-                if((game.curRound + 1) == game.totalRounds) {
+                if((game.curRound) >= game.totalRounds) {
                     donePlaying = true;
                 }
 
@@ -331,16 +341,20 @@ socketio.sockets.on('connection', function (socket) {
                 game.player1Socket.emit("game_result", {
                     totalScore:game.player1Score,
                     turnScore:game.player1TurnScore,
+                    playerChoice:game.player1Choice,
                     opponentChoice:game.player2Choice,
                     opponentTurnScore:game.player2TurnScore,
-                    donePlaying:donePlaying
+                    donePlaying:donePlaying,
+                    curRound:game.curRound
                 });
                 game.player2Socket.emit("game_result", {
                     totalScore:game.player2Score,
                     turnScore:game.player2TurnScore,
+                    playerChoice:game.player2Choice,
                     opponentChoice:game.player1Choice,
                     opponentTurnScore:game.player1TurnScore,
-                    donePlaying:donePlaying
+                    donePlaying:donePlaying,
+                    curRound:game.curRound
                 });
 
                 // reset the number of moves and move choice
@@ -356,77 +370,55 @@ socketio.sockets.on('connection', function (socket) {
     });
 });
 
-/**
-* Returns the computer's move
-* Currently returning a random move
-* Rock - 0
-* Paper - 1
-* Scissors - 2
-*/
-function getCPUMove() {
-    var rand = Math.random();
-
-    if(rand < 1/3) {
-        return 0;
-    } else if(rand >= 1/3 && rand < 2/3) {
-        return 1;
-    } else {
-        return 2;
-    }
-}
+// /**
+// * Returns the computer's move
+// * Currently returning a random move
+// * Rock - 0
+// * Paper - 1
+// * Scissors - 2
+// */
+// function getCpuMove() {
+//     var rand = Math.random();
+//
+//     if(rand < 1/3) {
+//         return 0;
+//     } else if(rand >= 1/3 && rand < 2/3) {
+//         return 1;
+//     } else {
+//         return 2;
+//     }
+// }
 
 // Update score for single player mode
+// There is only a stocastic mode for single player, only 2 choices
+// 1 player game
+// ================================================
+// action A: 2 with probability 90%, -2 with probability 10%
+// action B: 1.4 with certainty
+// ====================
 function updateSinglePlayerScores(game) {
+    console.log("in updating player score, got both player's moves.");
+    console.log("player1Choice: " + player1Choice);
+
     // Update scores
     var player1Choice = game.player1Choice;
-    var player2Choice = getCpuMove();
-
     var scoreMatrix = null;
     var numChoices = 0;
 
     if(game.useThreeChoices) {
-        numChoices = 3;
-
-        if(game.useStandardScore) {
-            scoreMatrix = standardScoreArray3;
-        } else {
-            scoreMatrix = stochScoreArray3;
-        }
+        // Don't have a payoff matrix for this yet
+        // FIXME
     } else {
-        numChoices = 2;
+        if(player1Choice == 0) {
+            game.player1TurnScore = Math.random() < .9 ? 2 : -2;
+        } else if(player1Choice == 1) {
+            game.player1TurnScore = 1.4;
 
-        if(game.useStandardScore) {
-            scoreMatrix = standardScoreArray2;
-        } else {
-            scoreMatrix = stochScoreArray2;
         }
-    }
-
-    console.log("in updating player score, got both player's moves.");
-    console.log("player1Choice: " + player1Choice + " player2choice: " + player2Choice);
-    console.log("scoreMatric: " + scoreMatrix);
-    console.log("index: " + ((player1Choice * 2 + player2Choice + 0) * 2));
-
-    // Calculate the index of the scores
-    var p1Index = (player1Choice * numChoices + player2Choice) * 2;
-    var p2Index = (player1Choice * numChoices + player2Choice) * 2 + 1;
-
-    console.log("choice: " + scoreMatrix[p1Index]);
-
-    if(!game.useStandardScore) {
-        // Stochastic scoring
-        var chance1 = scoreMatrix[p1Index];
-        var chance2 = scoreMatrix[p2Index];
-        game.player1TurnScore = Math.random() < chance1 ? 1 : 0;
-        game.player2TurnScore = Math.random() < chance2 ? 1 : 0;
-    } else {
-        // Deterministic scoring
-        game.player1TurnScore = scoreMatrix[p1Index];
-        game.player2TurnScore = scoreMatrix[p2Index];
     }
 
     game.player1Score += game.player1TurnScore;
-    game.player2Score += game.player2TurnScore;
+    game.player2TurnScore = 0;
 }
 
 // Update the score for each player in the game object

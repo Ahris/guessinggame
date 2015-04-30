@@ -52,11 +52,11 @@
                 Score
               </h3>
             </div>
-            <div class="panel-body counter" id="scoreNumber">
+            <div class="panel-body counter scoreNumber">
               0
             </div>
           </div>
-          <div class="panel panel-primary gameScoreBox">
+          <!-- <div class="panel panel-primary gameScoreBox">
             <div class="panel-heading">
               <h3 class="panel-title" id="panel-title">
                 Money Earned
@@ -65,7 +65,7 @@
             <div class="panel-body counter" id="moneyNumber">
               0
             </div>
-          </div>
+          </div> -->
           <div class="panel panel-primary gameScoreBox">
             <div class="panel-heading">
               <h3 class="panel-title" id="panel-title">
@@ -158,7 +158,24 @@
             <h4 class="modal-title" id="myModalLabel">Thanks for playing!</h4>
           </div>
 
-          <p id="gameModalPadding">You have finished your required number of games. Thanks for participating! Your data is saved and you can now exit.</p>
+          <div class="modal-body">
+              <p>You have finished your required number of games. Thanks for participating! Your data is saved and you can now exit.</p>
+
+              <div class="panel panel-primary gameScoreBox">
+                <div class="panel-heading">
+                  <h3 class="panel-title" id="panel-title">
+                    Total Score
+                  </h3>
+                </div>
+                <div class="panel-body counter scoreNumber">
+                  0
+                </div>
+              </div>
+          </div>
+
+          <div class="modal-footer">
+            <a type="button" class="btn btn-default" href="index.html" >Finish</a>
+          </div>
         </div>
       </div>
     </div>
@@ -175,6 +192,7 @@
           <div class="modal-body">
 
             <!--Num Rounds-->
+            <div id="optionError">Something was wrong your input.</div>
             <div class="input-group">
               <span class="input-group-addon" id="sizing-addon2">
                 Number of Rounds
@@ -183,7 +201,7 @@
             </div>
 
             <!--Score Mode-->
-            <div class="btn-group gameDropdown">
+            <!-- <div class="btn-group gameDropdown">
               <button type="button" class="btn btn-default" id="gameScoreDropdown">
                 Standard Score
               </button>
@@ -195,10 +213,10 @@
                 <li> <a id="gameStandardScore">Standard Score</a></li>
                 <li> <a id="gameStochasticScore">Stochastic Score</a></li>
               </ul>
-            </div>
+            </div> -->
 
             <!--See Opponent-->
-            <div class="btn-group gameDropdown">
+            <!-- <div class="btn-group gameDropdown">
               <button type="button" class="btn btn-default" id="gameOppDropdown">View Opponent</button>
               <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
                 <span class="caret"></span>
@@ -208,7 +226,7 @@
                 <li><a id="gameViewOpponent">View Opponent</a></li>
                 <li><a id="gameHideOpponent">Hide Opponent</a></li>
               </ul>
-            </div>
+            </div> -->
 
             <!--Num Choices-->
             <div class="btn-group gameDropdown">
@@ -219,7 +237,7 @@
               </button>
               <ul class="dropdown-menu" role="menu">
                 <li><a id="game2Choices">2 Choices</a></li>
-                <li><a id="game3Choices">3 Choices</a></li>
+                <!-- <li><a id="game3Choices">3 Choices</a></li> -->
               </ul>
             </div>
             <!-- </br> </br>

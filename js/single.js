@@ -10,196 +10,88 @@ $(document).ready(function() {
     /////////////////////////////////////////////////////////////////////
     // Setting up a game
     /////////////////////////////////////////////////////////////////////
-    // Communicating with the server
-    socketio = io.connect();
-
-
-    // Not including time any more
-    //startTime = d.getTime();
-
-    // /**
-    // * Prevent the user from leaving
-    // */
-    // $(window).bind("beforeunload", function() {
-    //     return "Game data will be lost!";
-    // });
-
-    // // Save the user's move
-    // $("#rock").click(function() {
-    //     $("#rock").addClass("active");
-    //     $("#paper").removeClass("active");
-    //     $("#scissors").removeClass("active");
-    //     playerChoice = 0;
-    // });
-    //
-    // $("#paper").click(function() {
-    //     $("#paper").addClass("active");
-    //     $("#rock").removeClass("active");
-    //     $("#scissors").removeClass("active");
-    //     playerChoice = 1;
-    // });
-    //
-    // $("#scissors").click(function() {
-    //     $("#scissors").addClass("active");
-    //     $("#paper").removeClass("active");
-    //     $("#rock").removeClass("active");
-    //     playerChoice = 2;
-    // });
-
-    // Don't allow users to open options in the middle of a game any more
-    //$("#options").click(openOptions);
-
+    socketio = io.connect("http://54.69.129.39:1337/");
     openOptions();
 
-    // Starting the game, send data to server
-    $("#saveOptions").click(function() {
-        console.log("save options yay");
+    // gameId:game.gameId,
+    // playerId:game.playerId1
+    socketio.on("approve_single_player", function(data) {
+        console.log("approve_single_player");
+        console.log("gameId: "+ data["gameId"]);
+        console.log("playerId " + data["playerId"]);
 
-        // Send the game options
-        socketio.emit("start_single_player", {
-            useStandardScore:   useStandardScore,
-            useViewOpponent:    useViewOpponent,
-            useThreeChoices:    useThreeChoices,
-            numRounds:          numRounds
-        });
-
-        console.log("sent game data to server");
+        gameId = data["gameId"];
+        playerId = data["playerId"];
     });
 
     // /**
-    // * Submit button pressed
+    // * Close the results modal and set up the next round
     // */
-    // $("#submit").click(function() {
-    //     // No choice was made
-    //     if(playerChoice == null) {
-    //         $("#popupAlert").fadeIn().delay(400).fadeOut();
-    //         return;
-    //     }
-    //
-    //     endTime = d.getTime();
-    //
-    //     // Update log array
-    //     log[2][0] = log[1][0]; log[2][1] = log[1][1];
-    //     log[2][2] = log[1][2]; log[2][3] = log[1][3];
-    //     log[1][0] = log[0][0]; log[1][1] = log[0][1];
-    //     log[1][2] = log[0][2]; log[1][3] = log[0][3];
-    //
-    //     switch(playerChoice) {
-    //         case 0:
-    //             log[0][1] = "rock";
-    //             break;
-    //         case 1:
-    //             log[0][1] = "paper";
-    //             break;
-    //         case 2:
-    //             log[0][1] = "scissors";
-    //             break;
-    //     }
-    //
-    //     gameResult = getWinner();
-    //     switch(gameResult) {
-    //         case 0:
-    //             ++ties;
-    //             log[0][0] = "tie";
-    //             log[0][2] = "ties";
-    //             $("#ties").html(ties);
-    //             $("#resultText").html("TIE").css("color", "#f0ad4e");
-    //             break;
-    //         case 1:
-    //             ++wins;
-    //             log[0][0] = "win";
-    //             log[0][2] = "loses";
-    //             $("#wins").html(wins);
-    //             $("#resultText").html("WIN").css("color", "#5cb85c");
-    //             break;
-    //         case 2:
-    //             ++losses;
-    //             log[0][0] = "lose";
-    //             log[0][2] = "wins";
-    //             $("#losses").html(losses);
-    //             $("#resultText").html("LOSE").css("color", "#d9534f");
-    //             break;
-    //     }
-    //
-    //     dScore = getScore(gameResult)
-    //     score += dScore;
-    //     score = roundThousandths(score);
-    //     $("#scoreNumber").html(score);
-    //     $("#gameScoreNumber").html("+" + dScore);
-    //
-    //     if(useViewOpponent) {
-    //         var resultStr = "The cpu played ";
-    //         switch(oppChoice) {
-    //             case 0:
-    //                 log[0][3] = "rock";
-    //                 resultStr = resultStr.concat("rock.");
-    //                 break;
-    //             case 1:
-    //                 log[0][3] = "paper";
-    //                 resultStr = resultStr.concat("paper.");
-    //                 break;
-    //             case 2:
-    //                 log[0][3] = "scissors";
-    //                 resultStr = resultStr.concat("scissors.");
-    //                 break;
-    //         }
-    //
-    //         $("#resultMessage").html(resultStr);
-    //     }
-    //
-    //     // Caluclate money earned
-    //     updateMoneyPayoff(gameResult);
-    //     $("#moneyNumber").html(totalMoney);
-    //
-    //     // Done playing
-    //     if(curRound == numRounds) {
-    //         $("#resultMessage").html("Thanks for playing! Data is saved and you can exit.");
-    //
-    //         $(window).bind("beforeunload", function() {
-    //             return "Thanks for playing!";
-    //         });
-    //
-    //         $("#continue").hide();
-    //     }
-    //
-    //     sendGameData();
-    //     //$("#gameResultModal").modal("show");
-    //     continueGame();
+    // $("#continue").click(function() {
+    //   continueGame();
     // });
-
-    /**
-    * Close the results modal and set up the next round
-    */
-    $("#continue").click(function() {
-      continueGame();
-    });
 });
 
-/**
- *  Returns money rounded to three digits
- */
- function roundThousandths(decimal) {
-   return Math.round(decimal * 1000) / 1000;
- }
+// Tell the server to create a new single player game
+function saveOptions() {
+    // Starting the game, send data to server
+    console.log("save options yay");
+
+    // Send the game options
+    socketio.emit("start_single_player", {
+        useStandardScore:   useStandardScore,
+        useViewOpponent:    useViewOpponent,
+        useThreeChoices:    useThreeChoices,
+        numRounds:          numRounds
+    });
+
+    console.log("sent game data to server");
+}
+
+// Update the log of previous games
+function updateSinglePlayerLog() {
+    // Update log number
+    if(curRound <= numRounds) {
+
+        console.log("about to update cur round number");
+        $("#gameRoundNumber").html(curRound);
+        $("#prev1Num").html(curRound - 1);
+        $("#prev2Num").html(curRound - 2);
+        $("#prev3Num").html(curRound - 3);
+    }
+
+    // Update displayed log
+    var text1 = "You chose " + log[0][0] + " and earned " + log[0][1] +
+                " points.";
+                $("#prev1Message").html(text1);
+
+    var text2 = "You chose " + log[1][0] + " and earned " + log[1][1] +
+                " points.";
+                $("#prev2Message").html(text2);
+
+    var text3 = "You chose " + log[2][0] + " and earned " + log[2][1] +
+                " points.";
+                $("#prev3Message").html(text3);
+}
 
 // Send move to server
 function sendAndGetResult() {
- console.log("sending result: playerChoice " + playerChoice );
+    console.log("sending result: playerChoice " + playerChoice );
 
- // Send the current move
- socketio.emit("submit_single_player_move", {
-     playerId:playerId,
-     gameId:gameId,
-     playerChoice:playerChoice
- });
+    // Send the current move
+    socketio.emit("submit_single_player_move", {
+        playerId:playerId,
+        gameId:gameId,
+        playerChoice:playerChoice
+    });
 
- // Params
- // totalScore:game.player1Score,
- // turnScore:game.player1TurnScore,
- // opponentChoice:game.player2Choice
- // opponentTurnScore:game.player2TurnScore
- // donePlaying:donePlaying
- socketio.on("single_game_result", function(data){
+    // Params
+    // totalScore:game.player1Score,
+    // turnScore:game.player1TurnScore,
+    // opponentChoice:game.player2Choice
+    // opponentTurnScore:game.player2TurnScore
+    // donePlaying:donePlaying
+    socketio.on("single_game_result", function(data){
      console.log("got game results!");
      console.log("totalScore: " + data["totalScore"]);
      console.log("turnScore: " + data["turnScore"]);
@@ -213,7 +105,17 @@ function sendAndGetResult() {
      turnScore    = data["turnScore"];
      oppTurnScore = data["opponentTurnScore"];
 
-     $("#scoreNumber").html(score);
+     // Round the score to 2 decimal places
+     score = roundToHundredth(score);
+     turnScore = roundToHundredth(turnScore);
+
+     // Session variable stuff
+     sessionStorage["singleScore"] = data["totalScore"];
+    //  if(sessionStorage["twoPlayerScore"] != null) {
+    //      score += Number(sessionStorage["twoPlayerScore"]);
+    //  }
+
+     $(".scoreNumber").html(score);
      $("#turnScore").html("+" + turnScore);
 
      // Update log array
@@ -227,10 +129,6 @@ function sendAndGetResult() {
      log[0][2] = choiceEnum[oppChoice];
      log[0][3] = oppTurnScore;
 
-     //turnScore = getScore(gameResult)
-     //score += turnScore;
-     //score = roundThousandths(score);
-
      // Check if done playing
      if(data["donePlaying"]) {
          console.log("done playing, modal should show now");
@@ -243,6 +141,8 @@ function sendAndGetResult() {
          $("#donePlayingModal").modal("show");
      }
 
+     curRound = data["curRound"] + 1;
      continueGame();
- });
+     updateSinglePlayerLog();
+    });
 }

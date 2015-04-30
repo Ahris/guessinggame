@@ -88,37 +88,11 @@ $(document).ready(function() {
 });
 
 function continueGame() {
-  startTime = d.getTime();
-  ++curRound;
-  updateLog();
+  //startTime = d.getTime();
   unselectOption();
   playerChoice = null;
   oppChoice = null;
   //$("#gameResultModal").modal("hide");
-}
-
-// Update the log of previous games
-function updateLog() {
-    // Update log number
-    if(curRound <= numRounds) {
-        $("#gameRoundNumber").html(curRound);
-        $("#prev1Num").html(curRound - 1);
-        $("#prev2Num").html(curRound - 2);
-        $("#prev3Num").html(curRound - 3);
-    }
-
-    // Update displayed log
-    var text1 = "You chose " + log[0][0] + " and earned " + log[0][1] +
-                " points. Opponent chose " + log[0][2] + " and earned " + log[0][3] + " points.";
-                $("#prev1Message").html(text1);
-
-    var text2 = "You chose " + log[1][0] + " and earned " + log[1][1] +
-                " points. Opponent chose " + log[1][2] + " and earned " + log[1][3] + " points.";
-                $("#prev2Message").html(text2);
-
-    var text3 = "You chose " + log[2][0] + " and earned " + log[2][1] +
-                " points. Opponent chose " + log[2][2] + " and earned " + log[2][3] + " points.";
-                $("#prev3Message").html(text3);
 }
 
 /**
@@ -128,4 +102,9 @@ function unselectOption() {
     $("#scissors").removeClass("active");
     $("#paper").removeClass("active");
     $("#rock").removeClass("active");
+}
+
+// Round to two decimal places
+function roundToHundredth(number) {
+    return Math.round(100*number)/100;
 }

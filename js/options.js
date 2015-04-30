@@ -1,9 +1,9 @@
 // Options
 // Standard score = 1, stochastic score = 0;
 // View Opponent = 1, Hide oppinent = 0;
-var useStandardScore = 1;
+var useStandardScore = 0;
 var useViewOpponent  = 1;
-var useThreeChoices  = 1;
+var useThreeChoices  = 0;
 var numRounds        = 500;
 var curRound         = 1;
 
@@ -37,7 +37,7 @@ var winStr             = "Win";
 var loseStr            = "Lose";
 
 // Enums
-var choiceEnum = ["rock", "paper", "scissors"];
+var choiceEnum = ["A", "B", "C"];
 var resultEnum = ["tie", "win", "lose"];
 var oppEnum    = ["hide", "view"];
 var scoreEnum  = ["stochastic", "standard"];
@@ -86,6 +86,11 @@ $(document).ready(function() {
       var tmp = $("#numRoundsField").val();
       if($.isNumeric(tmp)) {
           numRounds = tmp;
+      } else {
+console.log("round number is not a number");
+          // Let user know there is error in input
+          $("#optionError").show();
+          return;
       }
 
       // View or hide the opponent data
@@ -120,6 +125,9 @@ $(document).ready(function() {
 
       // Done, close the options box
       $("#gameOptionModal").modal("hide");
+
+      // Tell the server we are goood
+      saveOptions();
   });
 
 });
@@ -147,7 +155,7 @@ function openOptions() {
       $("#gameNumChoicesDropdown").html(twoChoices);
     }
 
-
+    $("#optionError").hide();
     $("#numRoundsField").attr("placeholder", numRounds);
     $("#numRoundsField").val("");
     $("#gameOptionModal").modal("show");

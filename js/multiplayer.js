@@ -91,21 +91,6 @@ $(document).ready(function() {
         openOptions();
     });
 
-    // Starting the game, send data to server
-    $("#saveOptions").click(function() {
-        console.log("save options yay");
-
-        // Send the game options
-        socketio.emit("start_two_player", {
-            useStandardScore:   useStandardScore,
-            useViewOpponent:    useViewOpponent,
-            useThreeChoices:    useThreeChoices,
-            numRounds:          numRounds
-        });
-
-        console.log("sent game data to server");
-    });
-
     // Get the game code back from the server
     // gameId:game.gameId,
     // playerId:game.playerId1
@@ -152,6 +137,46 @@ $(document).ready(function() {
     });
 });
 
+// Tell teh server to start a new two player game
+function saveOptions() {
+    console.log("save options yay");
+
+    // Send the game options
+    socketio.emit("start_two_player", {
+        useStandardScore:   useStandardScore,
+        useViewOpponent:    useViewOpponent,
+        useThreeChoices:    useThreeChoices,
+        numRounds:          numRounds
+    });
+
+    console.log("sent game data to server");
+}
+
+// Update the log of previous games
+function updateTwoPlayerLog() {
+    // Update log number
+    if(curRound <= numRounds) {
+        $("#gameRoundNumber").html(curRound);
+        $("#prev1Num").html(curRound - 1);
+        $("#prev2Num").html(curRound - 2);
+        $("#prev3Num").html(curRound - 3);
+    }
+
+    // Update displayed log
+    var text1 = "You chose " + log[0][0] + " and earned " + log[0][1] +
+                " points. Opponent chose " + log[0][2] + " and earned " + log[0][3] + " points.";
+                $("#prev1Message").html(text1);
+
+    var text2 = "You chose " + log[1][0] + " and earned " + log[1][1] +
+                " points. Opponent chose " + log[1][2] + " and earned " + log[1][3] + " points.";
+                $("#prev2Message").html(text2);
+
+    var text3 = "You chose " + log[2][0] + " and earned " + log[2][1] +
+                " points. Opponent chose " + log[2][2] + " and earned " + log[2][3] + " points.";
+                $("#prev3Message").html(text3);
+}
+
+
 function sendAndGetResult() {
     console.log("sending result: playerChoice " + playerChoice );
 
@@ -162,9 +187,13 @@ function sendAndGetResult() {
         playerChoice:playerChoice
     });
 
+    // FIXME We're getting the game_result twice, but we only need it once
+    var count = 0;
+
     // Params
     // totalScore:game.player1Score,
     // turnScore:game.player1TurnScore,
+    // playerChoice:game.player1Choice,
     // opponentChoice:game.player2Choice
     // opponentTurnScore:game.player2TurnScore
     // donePlaying:donePlaying
@@ -172,18 +201,38 @@ function sendAndGetResult() {
         console.log("got game results!");
         console.log("totalScore: " + data["totalScore"]);
         console.log("turnScore: " + data["turnScore"]);
+        console.log("playerChoice: " + data["playerChoice"]);
         console.log("opponentChoice: " + data["opponentChoice"]);
         console.log("opponentTurnScore: " + data["opponentTurnScore"]);
         console.log("doneplaying: " + data["donePlaying"]);
 
+        // FIXME We're getting the game_result twice, but we only need it once
+        count++;
+        if(count > 1) {
+            return;
+        }
+
         // Set the game data in appropriate vars.
+        playerChoice = data["playerChoice"];
         oppChoice    = data["opponentChoice"];
         score        = data["totalScore"];
         turnScore    = data["turnScore"];
         oppTurnScore = data["opponentTurnScore"];
 
-        $("#scoreNumber").html(score);
+        // Round the score to two decimal places
+        score = roundToHundredth(score);
+        turnScore = roundToHundredth(turnScore);
+
+        // Session variable stuff
+        sessionStorage["twoPlayerScore"] = data["totalScore"];
+        // if(sessionStorage["singleScore"] != null) {
+        //     score += Number(sessionStorage["singleScore"]);
+        // }
+
+        $(".scoreNumber").html(score);
         $("#turnScore").html("+" + turnScore);
+
+console.log("log array: " + log);
 
         // Update log array
         log[2][0] = log[1][0]; log[2][1] = log[1][1];
@@ -195,6 +244,8 @@ function sendAndGetResult() {
         log[0][1] = turnScore;
         log[0][2] = choiceEnum[oppChoice];
         log[0][3] = oppTurnScore;
+
+console.log("log array: " + log);
 
         //turnScore = getScore(gameResult)
         //score += turnScore;
@@ -212,7 +263,9 @@ function sendAndGetResult() {
             $("#donePlayingModal").modal("show");
         }
 
+        curRound = data["curRound"] + 1;
         continueGame();
+        updateTwoPlayerLog();
         $("#oppTurnModal").modal("hide");
     });
 }

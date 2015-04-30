@@ -64,9 +64,11 @@
             <h4 class="modal-title" id="myModalLabel">Game ID</h4>
           </div>
 
-          <p id="gameModalPadding">To have a friend join your game, simply let them know the unique game number below. Your friend will choose "Join a Game" and then enter the code to join.</p>
+          <div class="modal-body">
+              <p id="gameModalPadding">To have a friend join your game, simply let them know the unique game number below. Your friend will choose "Join a Game" and then enter the code to join.</p>
 
-          <div id="gameIdText">null</div>
+              <div id="gameIdText">null</div>
+          </div>
         </div>
       </div>
     </div>
@@ -80,7 +82,9 @@
             <h4 class="modal-title" id="myModalLabel">Waiting for Opponent's turn</h4>
           </div>
 
-          <p id="gameModalPadding">I wonder what move they will choose!</p>
+          <div class="modal-body">
+              <p id="gameModalPadding">I wonder what move they will choose!</p>
+          </div>
         </div>
       </div>
     </div>
@@ -94,7 +98,7 @@
             <h4 class="modal-title" id="myModalLabel">Join Game</h4>
           </div>
 
-          <div id="gameModalPadding">
+          <div class="modal-body">
             <div id="gameIdError">*Invalid game ID</div>
             <form class="form-horizontal">
               <div class="form-group">
@@ -124,7 +128,24 @@
             <h4 class="modal-title" id="myModalLabel">Thanks for playing!</h4>
           </div>
 
-          <p id="gameModalPadding">You have finished your required number of games. Thanks for participating! Your data is saved and you can now exit.</p>
+          <div class="modal-body">
+              <p id="gameModalPadding">You have finished your required number of games. Thanks for participating! Your data is saved and you can now exit.</p>
+
+              <div class="panel panel-primary gameScoreBox">
+                <div class="panel-heading">
+                  <h3 class="panel-title" id="panel-title">
+                    Total Score
+                  </h3>
+                </div>
+                <div class="panel-body counter scoreNumber">
+                  0
+                </div>
+              </div>
+          </div>
+
+          <div class="modal-footer">
+            <a type="button" class="btn btn-default" href="index.html" >Finish</a>
+          </div>
         </div>
       </div>
     </div>
@@ -141,6 +162,7 @@
           <div class="modal-body">
 
             <!--Num Rounds-->
+            <div id="optionError">Something was wrong your input.</div>
             <div class="input-group">
               <span class="input-group-addon" id="sizing-addon2">
                 Number of Rounds
@@ -213,11 +235,11 @@
               Score
             </h3>
           </div>
-          <div class="panel-body counter" id="scoreNumber">
+          <div class="panel-body counter scoreNumber">
             0
           </div>
         </div>
-        <div class="panel panel-primary gameScoreBox">
+        <!-- <div class="panel panel-primary gameScoreBox">
           <div class="panel-heading">
             <h3 class="panel-title" id="panel-title">
               Money Earned
@@ -226,7 +248,7 @@
           <div class="panel-body counter" id="moneyNumber">
             0
           </div>
-        </div>
+        </div> -->
         <div class="panel panel-primary gameScoreBox">
           <div class="panel-heading">
             <h3 class="panel-title" id="panel-title">
